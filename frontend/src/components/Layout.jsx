@@ -6,8 +6,8 @@ export function Layout({ title, children }) {
   const navigate = useNavigate()
 
   return (
-    <div className="min-h-screen bg-slate-950 p-4">
-      <div className="mx-auto max-w-6xl rounded-2xl bg-slate-900 p-6 shadow-lg">
+    <div className="min-h-screen bg-slate-950 p-4 md:p-6">
+      <div className="mx-auto flex min-h-[calc(100vh-2rem)] max-w-5xl flex-col md:min-h-[calc(100vh-3rem)]">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b pb-4 dark:border-slate-700">
           <div>
             <h1 className="text-2xl font-bold">{title}</h1>
@@ -41,7 +41,9 @@ export function Layout({ title, children }) {
             </button>
           </div>
         </div>
-        {children}
+        <div className="flex min-h-0 flex-1 items-start justify-center pt-2 md:pt-4">
+          <div className="w-full max-w-4xl">{children}</div>
+        </div>
       </div>
     </div>
   )

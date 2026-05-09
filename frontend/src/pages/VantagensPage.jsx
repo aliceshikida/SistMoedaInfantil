@@ -25,7 +25,7 @@ export function VantagensPage() {
     <Layout title="Vantagens">
       {user?.role === 'EMPRESA' && (
         <form
-          className="mb-5 grid gap-2 rounded-xl border p-4 dark:border-slate-700"
+          className="mb-6 grid gap-3 rounded-2xl border border-slate-700/70 bg-slate-900/50 p-5 backdrop-blur-sm"
           onSubmit={async (event) => {
             event.preventDefault()
             const toastId = toast.loading('Salvando vantagem...')
@@ -52,29 +52,29 @@ export function VantagensPage() {
             }
           }}
         >
-          <h2 className="text-lg font-semibold">Cadastrar nova vantagem</h2>
+          <h2 className="text-lg font-semibold text-slate-100">Cadastrar nova vantagem</h2>
           <input
-            className="rounded border p-2 dark:bg-slate-800"
+            className="rounded-lg border border-slate-600 bg-slate-800/80 p-2.5 text-slate-100 placeholder-slate-400 focus:border-indigo-500 focus:outline-none"
             placeholder="Título"
             value={form.titulo}
             onChange={(event) => setForm((prev) => ({ ...prev, titulo: event.target.value }))}
           />
           <textarea
-            className="rounded border p-2 dark:bg-slate-800"
+            className="min-h-24 rounded-lg border border-slate-600 bg-slate-800/80 p-2.5 text-slate-100 placeholder-slate-400 focus:border-indigo-500 focus:outline-none"
             placeholder="Descrição"
             value={form.descricao}
             onChange={(event) => setForm((prev) => ({ ...prev, descricao: event.target.value }))}
           />
           <input
             type="number"
-            className="rounded border p-2 dark:bg-slate-800"
+            className="rounded-lg border border-slate-600 bg-slate-800/80 p-2.5 text-slate-100 placeholder-slate-400 focus:border-indigo-500 focus:outline-none"
             placeholder="Custo em moedas"
             value={form.custoMoedas}
             onChange={(event) => setForm((prev) => ({ ...prev, custoMoedas: Number(event.target.value) }))}
           />
           <input
             type="file"
-            className="rounded border p-2 dark:bg-slate-800"
+            className="rounded-lg border border-slate-600 bg-slate-800/80 p-2.5 text-sm text-slate-200 file:mr-3 file:rounded-md file:border-0 file:bg-slate-700 file:px-3 file:py-2 file:text-slate-100 hover:file:bg-slate-600"
             onChange={(event) => setForm((prev) => ({ ...prev, foto: event.target.files?.[0] || null }))}
           />
           <button className="btn-primary disabled:cursor-not-allowed disabled:opacity-70" disabled={submitting}>
