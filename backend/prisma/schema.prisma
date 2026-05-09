@@ -1,0 +1,142 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ALUNO
+  PROFESSOR
+  EMPRESA
+  ADMIN
+}
+
+enum StatusUsuario {
+  ATIVO
+  BLOQUEADO
+}
+
+enum TipoTransacao {
+  ENVIO
+  RECEBIMENTO
+  RESGATE
+}
+
+enum StatusCupom {
+  GERADO
+  UTILIZADO
+  EXPIRADO
+}
+
+model Usuario {
+  id           String        @id @default(cuid())
+  nome         String
+  email        String        @unique
+  senhaHash    String
+  role         Role
+  status       StatusUsuario @default(ATIVO)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  aluno        Aluno?
+  professor    Professor?
+  empresa      Empresa?
+  transacoes   Transacao[]
+  cupons       Cupom[]
+}
+
+model Instituicao {
+  id         String      @id @default(cuid())
+  nome       String      @unique
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  alunos     Aluno[]
+  professores Professor[]
+}
+
+model Aluno {
+  id            String   @id @default(cuid())
+  usuarioId     String   @unique
+  cpf           String   @unique
+  rg            String
+  endereco      String
+  curso         String
+  saldoMoedas   Int      @default(0)
+  instituicaoId String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  usuario       Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  instituicao   Instituicao @relation(fields: [instituicaoId], references: [id])
+  transacoesOrigem  Transacao[] @relation("AlunoOrigem")
+  transacoesDestino Transacao[] @relation("AlunoDestino")
+}
+
+model Professor {
+  id            String   @id @default(cuid())
+  usuarioId     String   @unique
+  cpf           String   @unique
+  departamento  String
+  saldoMoedas   Int      @default(1000)
+  instituicaoId String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  usuario       Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  instituicao   Instituicao @relation(fields: [instituicaoId], references: [id])
+  transacoes    Transacao[]
+}
+
+model Empresa {
+  id          String   @id @default(cuid())
+  usuarioId   String   @unique
+  cnpj        String   @unique
+  descricao   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  usuario     Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  vantagens   Vantagem[]
+}
+
+model Vantagem {
+  id          String   @id @default(cuid())
+  titulo      String
+  descricao   String
+  custoMoedas Int
+  foto        String?
+  empresaId   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  empresa     Empresa  @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  cupons      Cupom[]
+}
+
+model Transacao {
+  id               String        @id @default(cuid())
+  tipo             TipoTransacao
+  descricao        String
+  quantidadeMoedas Int
+  usuarioId        String
+  professorId      String?
+  alunoOrigemId    String?
+  alunoDestinoId   String?
+  createdAt        DateTime      @default(now())
+  usuario          Usuario       @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  professor        Professor?    @relation(fields: [professorId], references: [id], onDelete: SetNull)
+  alunoOrigem      Aluno?        @relation("AlunoOrigem", fields: [alunoOrigemId], references: [id], onDelete: SetNull)
+  alunoDestino     Aluno?        @relation("AlunoDestino", fields: [alunoDestinoId], references: [id], onDelete: SetNull)
+
+  @@index([usuarioId, createdAt])
+}
+
+model Cupom {
+  id          String      @id @default(cuid())
+  codigo      String      @unique
+  usuarioId   String
+  vantagemId  String
+  status      StatusCupom @default(GERADO)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  usuario     Usuario     @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  vantagem    Vantagem    @relation(fields: [vantagemId], references: [id], onDelete: Cascade)
+}
