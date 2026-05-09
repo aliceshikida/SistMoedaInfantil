@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 import { PrismaClient, Role } from "@prisma/client";
+import { getCurrentSemesterKey } from "../src/utils/semester.js";
 
 const prisma = new PrismaClient();
 
@@ -27,27 +28,75 @@ async function main() {
     },
   });
 
-  for (let i = 1; i <= 2; i += 1) {
-    const email = `professor${i}@sme.local`;
-    const senhaHash = await bcrypt.hash("Professor@123", 10);
-    const usuario = await prisma.usuario.upsert({
-      where: { email },
-      update: {},
-      create: {
-        nome: `Professor ${i}`,
-        email,
+  const professores = [
+    {
+      nome: "professor",
+      email: "professor@dominio.com",
+      senha: "12345678",
+      cpf: "11111111111",
+      departamento: "Tecnologia",
+    },
+    {
+      nome: "Professor 2",
+      email: "professor2@sme.local",
+      senha: "12345678",
+      cpf: "11111111112",
+      departamento: "Tecnologia",
+    },
+  ];
+
+  for (const professor of professores) {
+    const senhaHash = await bcrypt.hash(professor.senha, 10);
+    const existingProfessor = await prisma.professor.findUnique({
+      where: { cpf: professor.cpf },
+      include: { usuario: true },
+    });
+
+    if (existingProfessor) {
+      const emailOwner = await prisma.usuario.findUnique({
+        where: { email: professor.email },
+      });
+      if (emailOwner && emailOwner.id !== existingProfessor.usuarioId) {
+        await prisma.usuario.update({
+          where: { id: emailOwner.id },
+          data: { email: `legacy-${Date.now()}-${professor.email}` },
+        });
+      }
+      await prisma.usuario.update({
+        where: { id: existingProfessor.usuarioId },
+        data: {
+          nome: professor.nome,
+          email: professor.email,
+          senhaHash,
+          role: Role.PROFESSOR,
+        },
+      });
+      await prisma.professor.update({
+        where: { id: existingProfessor.id },
+        data: {
+          departamento: professor.departamento,
+          ultimoSemestreCredito: getCurrentSemesterKey(),
+          instituicaoId: instituicoes[0].id,
+        },
+      });
+      continue;
+    }
+
+    const usuario = await prisma.usuario.create({
+      data: {
+        nome: professor.nome,
+        email: professor.email,
         senhaHash,
         role: Role.PROFESSOR,
       },
     });
 
-    await prisma.professor.upsert({
-      where: { usuarioId: usuario.id },
-      update: {},
-      create: {
+    await prisma.professor.create({
+      data: {
         usuarioId: usuario.id,
-        cpf: `1111111111${i}`,
-        departamento: "Tecnologia",
+        cpf: professor.cpf,
+        departamento: professor.departamento,
+        ultimoSemestreCredito: getCurrentSemesterKey(),
         instituicaoId: instituicoes[0].id,
       },
     });

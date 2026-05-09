@@ -10,6 +10,10 @@ import {
   dashboardHandler,
   enviarMoedasHandler,
   extratoHandler,
+  listAlunosParaProfessor,
+  listCuponsAluno,
+  listCuponsEmpresa,
+  listVantagensEmpresa,
   listInstituicoes,
   listVantagens,
   resgatarVantagemHandler,
@@ -30,8 +34,12 @@ router.get("/auth/me", authenticate, meHandler);
 
 router.get("/dashboard", authenticate, dashboardHandler);
 router.get("/extrato", authenticate, extratoHandler);
+router.get("/aluno/cupons", authenticate, authorize("ALUNO"), listCuponsAluno);
+router.get("/professor/alunos", authenticate, authorize("PROFESSOR"), listAlunosParaProfessor);
 router.post("/professor/enviar-moedas", authenticate, authorize("PROFESSOR"), enviarMoedasHandler);
 router.post("/aluno/resgatar", authenticate, authorize("ALUNO"), resgatarVantagemHandler);
+router.get("/empresa/vantagens", authenticate, authorize("EMPRESA"), listVantagensEmpresa);
+router.get("/empresa/cupons", authenticate, authorize("EMPRESA"), listCuponsEmpresa);
 router.post(
   "/empresa/vantagens",
   authenticate,

@@ -18,10 +18,14 @@ function htmlTemplate(title, body) {
 
 export async function sendMail({ to, subject, title, body }) {
   if (!env.smtp.host || !to) return;
-  await transporter.sendMail({
-    from: env.smtp.from,
-    to,
-    subject,
-    html: htmlTemplate(title, body),
-  });
+  try {
+    await transporter.sendMail({
+      from: env.smtp.from,
+      to,
+      subject,
+      html: htmlTemplate(title, body),
+    });
+  } catch (error) {
+    console.warn("Email não enviado no ambiente local:", error.message);
+  }
 }

@@ -7,6 +7,8 @@ import App from './App.jsx'
 import { AuthProvider } from './providers/AuthProvider.jsx'
 import 'react-toastify/dist/ReactToastify.css'
 
+document.documentElement.classList.add('dark')
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>

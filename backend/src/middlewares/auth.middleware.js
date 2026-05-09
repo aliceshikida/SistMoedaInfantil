@@ -1,4 +1,4 @@
-import { prisma } from "../prisma/client.js";
+import { UsuarioDAO } from "../dao/usuario.dao.js";
 import { verifyToken } from "../utils/token.js";
 
 export async function authenticate(req, _res, next) {
@@ -7,10 +7,7 @@ export async function authenticate(req, _res, next) {
     const token = header.startsWith("Bearer ") ? header.slice(7) : null;
     if (!token) return next({ status: 401, message: "Token ausente." });
     const payload = verifyToken(token);
-    const user = await prisma.usuario.findUnique({
-      where: { id: payload.sub },
-      select: { id: true, role: true, status: true, email: true, nome: true },
-    });
+    const user = await UsuarioDAO.findById(payload.sub);
     if (!user || user.status !== "ATIVO") {
       return next({ status: 401, message: "Usuário inválido ou bloqueado." });
     }

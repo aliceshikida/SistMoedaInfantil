@@ -1,9 +1,10 @@
 import bcrypt from "bcryptjs";
 import { Role } from "@prisma/client";
-import { prisma } from "../prisma/client.js";
+import { UsuarioDAO } from "../dao/usuario.dao.js";
 import { isValidCnpj, isValidCpf, onlyDigits } from "../utils/docValidator.js";
 import { signToken } from "../utils/token.js";
 import { sendMail } from "./email.service.js";
+import { creditSemesterCoinsIfNeeded } from "./professor.service.js";
 
 function authResponse(user) {
   const token = signToken({ sub: user.id, role: user.role });
@@ -24,10 +25,10 @@ export async function registerAluno(data) {
   } = data;
   if (senha !== confirmacaoSenha) throw { status: 400, message: "Confirmação de senha inválida." };
   if (!isValidCpf(cpf)) throw { status: 400, message: "CPF inválido." };
-  const exists = await prisma.usuario.findUnique({ where: { email } });
+  const exists = await UsuarioDAO.findByEmail(email);
   if (exists) throw { status: 409, message: "Email já cadastrado." };
   const senhaHash = await bcrypt.hash(senha, 10);
-  const user = await prisma.usuario.create({
+  const user = await UsuarioDAO.create({
     data: {
       nome,
       email,
@@ -57,10 +58,10 @@ export async function registerEmpresa(data) {
   const { nome, email, senha, confirmacaoSenha, cnpj, descricao } = data;
   if (senha !== confirmacaoSenha) throw { status: 400, message: "Confirmação de senha inválida." };
   if (!isValidCnpj(cnpj)) throw { status: 400, message: "CNPJ inválido." };
-  const exists = await prisma.usuario.findUnique({ where: { email } });
+  const exists = await UsuarioDAO.findByEmail(email);
   if (exists) throw { status: 409, message: "Email já cadastrado." };
   const senhaHash = await bcrypt.hash(senha, 10);
-  const user = await prisma.usuario.create({
+  const user = await UsuarioDAO.create({
     data: {
       nome,
       email,
@@ -79,9 +80,12 @@ export async function registerEmpresa(data) {
 }
 
 export async function login({ email, senha }) {
-  const user = await prisma.usuario.findUnique({ where: { email } });
+  const user = await UsuarioDAO.findByEmailOrNome(email);
   if (!user) throw { status: 401, message: "Credenciais inválidas." };
   const ok = await bcrypt.compare(senha, user.senhaHash);
   if (!ok) throw { status: 401, message: "Credenciais inválidas." };
+  if (user.role === Role.PROFESSOR) {
+    await creditSemesterCoinsIfNeeded(user.id);
+  }
   return authResponse(user);
 }

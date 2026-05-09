@@ -1,5 +1,41 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
-body {
-  @apply bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100;
+@layer base {
+  html,
+  body,
+  #root {
+    min-height: 100%;
+  }
+
+  body {
+    @apply bg-slate-900 text-slate-100;
+  }
 }
+
+@layer components {
+  .auth-shell {
+    @apply flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 p-4;
+  }
+
+  .auth-card {
+    @apply w-full max-w-xl rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-xl;
+  }
+
+  .btn-primary {
+    @apply rounded-lg bg-indigo-700 px-3 py-2.5 font-semibold text-white transition-all duration-200 ease-out transform-gpu hover:-translate-y-0.5 hover:bg-indigo-600 hover:shadow-lg active:translate-y-0 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500;
+  }
+
+  .btn-secondary {
+    @apply rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm font-semibold text-white transition-all duration-200 ease-out transform-gpu hover:-translate-y-0.5 hover:bg-slate-700 hover:shadow-lg active:translate-y-0 active:scale-[0.98] dark:border-slate-200 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white;
+  }
+
+  .btn-clean {
+    @apply rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm font-medium text-slate-200 transition-all duration-200 ease-out transform-gpu hover:-translate-y-0.5 hover:bg-slate-700 hover:shadow-lg active:translate-y-0 active:scale-[0.98];
+  }
+
+  .btn-danger {
+    @apply rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold text-white transition-all duration-200 ease-out transform-gpu hover:-translate-y-0.5 hover:bg-red-500 hover:shadow-lg active:translate-y-0 active:scale-[0.98];
+  }
+}
+

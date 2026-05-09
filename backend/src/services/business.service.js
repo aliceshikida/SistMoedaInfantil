@@ -1,21 +1,26 @@
 import { TipoTransacao } from "@prisma/client";
 import { prisma } from "../prisma/client.js";
+import { AlunoDAO } from "../dao/aluno.dao.js";
+import { ProfessorDAO } from "../dao/professor.dao.js";
+import { VantagemDAO } from "../dao/vantagem.dao.js";
+import { TransacaoDAO } from "../dao/transacao.dao.js";
+import { CupomDAO } from "../dao/cupom.dao.js";
 import { createCouponCode } from "../utils/coupon.js";
 import { sendMail } from "./email.service.js";
 
 export async function enviarMoedas({ professorUserId, alunoId, quantidade, mensagem }) {
-  const professor = await prisma.professor.findUnique({
-    where: { usuarioId: professorUserId },
-    include: { usuario: true },
+  if (!mensagem?.trim()) throw { status: 400, message: "Mensagem é obrigatória." };
+  if (!quantidade || Number.isNaN(quantidade) || quantidade <= 0) {
+    throw { status: 400, message: "Quantidade de moedas inválida." };
+  }
+  const professor = await ProfessorDAO.findByUsuarioId(professorUserId, {
+    usuario: true,
+    instituicao: true,
   });
   if (!professor) throw { status: 404, message: "Professor não encontrado." };
   if (professor.saldoMoedas < quantidade) throw { status: 400, message: "Saldo insuficiente." };
-  const aluno = await prisma.aluno.findUnique({
-    where: { id: alunoId },
-    include: { usuario: true },
-  });
+  const aluno = await AlunoDAO.findById(alunoId, { usuario: true, instituicao: true });
   if (!aluno) throw { status: 404, message: "Aluno não encontrado." };
-
   return prisma.$transaction(async (tx) => {
     await tx.professor.update({
       where: { id: professor.id },
@@ -25,8 +30,8 @@ export async function enviarMoedas({ professorUserId, alunoId, quantidade, mensa
       where: { id: aluno.id },
       data: { saldoMoedas: { increment: quantidade } },
     });
-    await tx.transacao.create({
-      data: {
+    await TransacaoDAO.create(
+      {
         tipo: TipoTransacao.ENVIO,
         descricao: mensagem,
         quantidadeMoedas: quantidade,
@@ -34,9 +39,10 @@ export async function enviarMoedas({ professorUserId, alunoId, quantidade, mensa
         professorId: professor.id,
         alunoDestinoId: aluno.id,
       },
-    });
-    await tx.transacao.create({
-      data: {
+      tx,
+    );
+    await TransacaoDAO.create(
+      {
         tipo: TipoTransacao.RECEBIMENTO,
         descricao: `Recebimento de moedas de ${professor.usuario.nome}.`,
         quantidadeMoedas: quantidade,
@@ -44,7 +50,8 @@ export async function enviarMoedas({ professorUserId, alunoId, quantidade, mensa
         professorId: professor.id,
         alunoDestinoId: aluno.id,
       },
-    });
+      tx,
+    );
     await sendMail({
       to: aluno.usuario.email,
       subject: "Você recebeu moedas",
@@ -55,14 +62,8 @@ export async function enviarMoedas({ professorUserId, alunoId, quantidade, mensa
 }
 
 export async function resgatarVantagem({ alunoUserId, vantagemId }) {
-  const aluno = await prisma.aluno.findUnique({
-    where: { usuarioId: alunoUserId },
-    include: { usuario: true },
-  });
-  const vantagem = await prisma.vantagem.findUnique({
-    where: { id: vantagemId },
-    include: { empresa: { include: { usuario: true } } },
-  });
+  const aluno = await AlunoDAO.findByUsuarioId(alunoUserId, { usuario: true });
+  const vantagem = await VantagemDAO.findById(vantagemId, { empresa: { include: { usuario: true } } });
   if (!aluno || !vantagem) throw { status: 404, message: "Aluno ou vantagem inválida." };
   if (aluno.saldoMoedas < vantagem.custoMoedas) throw { status: 400, message: "Saldo insuficiente." };
 
@@ -71,22 +72,24 @@ export async function resgatarVantagem({ alunoUserId, vantagemId }) {
       where: { id: aluno.id },
       data: { saldoMoedas: { decrement: vantagem.custoMoedas } },
     });
-    const cupom = await tx.cupom.create({
-      data: {
+    const cupom = await CupomDAO.create(
+      {
         codigo: createCouponCode(),
         usuarioId: aluno.usuarioId,
         vantagemId: vantagem.id,
       },
-    });
-    await tx.transacao.create({
-      data: {
+      tx,
+    );
+    await TransacaoDAO.create(
+      {
         tipo: TipoTransacao.RESGATE,
         descricao: `Resgate de vantagem: ${vantagem.titulo}`,
         quantidadeMoedas: vantagem.custoMoedas,
         usuarioId: aluno.usuarioId,
         alunoOrigemId: aluno.id,
       },
-    });
+      tx,
+    );
     await sendMail({
       to: aluno.usuario.email,
       subject: "Cupom gerado com sucesso",

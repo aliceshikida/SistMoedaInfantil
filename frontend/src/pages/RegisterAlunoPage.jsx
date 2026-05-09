@@ -28,6 +28,7 @@ export function RegisterAlunoPage() {
   const navigate = useNavigate()
   const { registerAluno } = useAuth()
   const [instituicoes, setInstituicoes] = useState([])
+  const [submitting, setSubmitting] = useState(false)
   const { register, handleSubmit, formState } = useForm({ resolver: zodResolver(schema) })
 
   useEffect(() => {
@@ -35,29 +36,44 @@ export function RegisterAlunoPage() {
   }, [])
 
   return (
-    <main className="mx-auto max-w-xl p-4">
-      <h1 className="mb-3 text-2xl font-bold">Cadastro de Aluno</h1>
+    <main className="auth-shell py-8">
+      <div className="auth-card">
+        <div className="mb-4 flex items-center justify-between">
+          <button type="button" onClick={() => navigate('/login')} className="btn-clean">
+            Voltar
+          </button>
+        </div>
+      <h1 className="mb-3 text-center text-2xl font-extrabold text-slate-900 dark:text-white">Cadastro de Aluno</h1>
       <form
-        className="grid gap-2 rounded-xl bg-white p-4 shadow"
+        className="grid gap-2"
         onSubmit={handleSubmit(async (values) => {
+          const toastId = toast.loading('Criando cadastro...')
+          setSubmitting(true)
           try {
             await registerAluno(values)
-            toast.success('Cadastro realizado com sucesso')
+            toast.update(toastId, { render: 'Cadastro realizado com sucesso', type: 'success', isLoading: false, autoClose: 1200 })
             navigate('/dashboard')
-          } catch {
-            toast.error('Erro ao cadastrar aluno')
+          } catch (error) {
+            toast.update(toastId, {
+              render: error?.response?.data?.message || 'Erro ao cadastrar aluno',
+              type: 'error',
+              isLoading: false,
+              autoClose: 2500,
+            })
+          } finally {
+            setSubmitting(false)
           }
         })}
       >
-        <input {...register('nome')} className="rounded border p-2" placeholder="Nome completo" />
-        <input {...register('email')} className="rounded border p-2" placeholder="Email" />
-        <input type="password" {...register('senha')} className="rounded border p-2" placeholder="Senha" />
-        <input type="password" {...register('confirmacaoSenha')} className="rounded border p-2" placeholder="Confirmação de senha" />
-        <input {...register('cpf')} className="rounded border p-2" placeholder="CPF" />
-        <input {...register('rg')} className="rounded border p-2" placeholder="RG" />
-        <input {...register('endereco')} className="rounded border p-2" placeholder="Endereço" />
-        <input {...register('curso')} className="rounded border p-2" placeholder="Curso" />
-        <select {...register('instituicaoId')} className="rounded border p-2">
+        <input {...register('nome')} className="rounded-lg border border-slate-400 bg-white p-2.5 text-slate-900 placeholder-slate-500 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100" placeholder="Nome completo" />
+        <input {...register('email')} className="rounded-lg border border-slate-400 bg-white p-2.5 text-slate-900 placeholder-slate-500 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100" placeholder="Email" />
+        <input type="password" {...register('senha')} className="rounded-lg border border-slate-400 bg-white p-2.5 text-slate-900 placeholder-slate-500 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100" placeholder="Senha" />
+        <input type="password" {...register('confirmacaoSenha')} className="rounded-lg border border-slate-400 bg-white p-2.5 text-slate-900 placeholder-slate-500 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100" placeholder="Confirmação de senha" />
+        <input {...register('cpf')} className="rounded-lg border border-slate-400 bg-white p-2.5 text-slate-900 placeholder-slate-500 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100" placeholder="CPF" />
+        <input {...register('rg')} className="rounded-lg border border-slate-400 bg-white p-2.5 text-slate-900 placeholder-slate-500 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100" placeholder="RG" />
+        <input {...register('endereco')} className="rounded-lg border border-slate-400 bg-white p-2.5 text-slate-900 placeholder-slate-500 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100" placeholder="Endereço" />
+        <input {...register('curso')} className="rounded-lg border border-slate-400 bg-white p-2.5 text-slate-900 placeholder-slate-500 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100" placeholder="Curso" />
+        <select {...register('instituicaoId')} className="rounded-lg border border-slate-400 bg-white p-2.5 text-slate-900 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100">
           <option value="">Selecione a instituição</option>
           {instituicoes.map((item) => (
             <option key={item.id} value={item.id}>
@@ -65,9 +81,12 @@ export function RegisterAlunoPage() {
             </option>
           ))}
         </select>
-        <p className="text-xs text-red-500">{Object.values(formState.errors)[0]?.message}</p>
-        <button className="rounded bg-indigo-600 p-2 text-white">Cadastrar</button>
+        <p className="min-h-5 text-xs font-medium text-red-600 dark:text-red-400">{Object.values(formState.errors)[0]?.message}</p>
+        <button className="btn-primary disabled:cursor-not-allowed disabled:opacity-70" disabled={submitting}>
+          {submitting ? 'Cadastrando...' : 'Cadastrar'}
+        </button>
       </form>
+      </div>
     </main>
   )
 }

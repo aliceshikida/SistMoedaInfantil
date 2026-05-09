@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { prisma } from "../prisma/client.js";
+import { UsuarioDAO } from "../dao/usuario.dao.js";
 import { login, registerAluno, registerEmpresa } from "../services/auth.service.js";
 
 const alunoSchema = z.object({
@@ -23,7 +23,7 @@ const empresaSchema = z.object({
   descricao: z.string().min(8),
 });
 
-const loginSchema = z.object({ email: z.string().email(), senha: z.string().min(8) });
+const loginSchema = z.object({ email: z.string().min(3), senha: z.string().min(8) });
 
 export async function registerAlunoHandler(req, res, next) {
   try {
@@ -57,13 +57,10 @@ export async function loginHandler(req, res, next) {
 
 export async function meHandler(req, res, next) {
   try {
-    const user = await prisma.usuario.findUnique({
-      where: { id: req.user.id },
-      include: {
-        aluno: true,
-        professor: true,
-        empresa: true,
-      },
+    const user = await UsuarioDAO.findById(req.user.id, {
+      aluno: true,
+      professor: true,
+      empresa: true,
     });
     res.json({ user });
   } catch (error) {

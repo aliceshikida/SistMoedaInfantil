@@ -1,40 +1,112 @@
 # Sistema de Moeda Estudantil
 
-Sistema web completo para reconhecimento acadêmico com moedas virtuais: professores enviam moedas para alunos, alunos resgatam vantagens de empresas parceiras e o admin acompanha estatísticas gerais.
+Plataforma web de reconhecimento academico baseada em moedas virtuais.
+Professores enviam moedas para alunos, alunos acumulam saldo e trocam por vantagens cadastradas por empresas parceiras.
+O sistema controla transacoes, extrato, cupons e dashboards por perfil.
 
-## Stack
+## Visao geral
 
-- **Front-end:** React + Vite + TailwindCSS + React Router + Axios + React Hook Form + Zod
-- **Back-end:** Node.js + Express + JWT + Multer + Nodemailer + Swagger
-- **Banco:** PostgreSQL + Prisma ORM
-- **Arquitetura:** MVC + Services + Middlewares + rotas protegidas por perfil
-- **Infra:** Docker Compose
+- Perfis de acesso: `ALUNO`, `PROFESSOR`, `EMPRESA`, `ADMIN`
+- Autenticacao: JWT com middleware de autenticacao e autorizacao por perfil
+- Camadas: Controllers -> Services -> Prisma
+- Persistencia: Prisma ORM (execucao local atualmente com SQLite para facilitar setup)
+- Front-end dark-first e responsivo
 
-## Estrutura de pastas
+## Stack utilizada
+
+### Front-end
+- React + Vite
+- React Router
+- Axios
+- React Hook Form + Zod
+- TailwindCSS
+- Recharts
+- React Toastify
+
+### Back-end
+- Node.js + Express
+- Prisma ORM
+- JWT
+- bcryptjs
+- Multer (upload de imagem)
+- Nodemailer (emails)
+- Swagger (documentacao da API)
+
+## Arquitetura de pastas
 
 ```text
 .
-├── frontend/
-├── backend/
+├── backend
+│   ├── prisma
+│   │   ├── schema.prisma
+│   │   └── seed.js
+│   └── src
+│       ├── config
+│       ├── controllers
+│       ├── middlewares
+│       ├── prisma
+│       ├── routes
+│       ├── services
+│       └── utils
+├── frontend
+│   └── src
+│       ├── components
+│       ├── hooks
+│       ├── lib
+│       ├── pages
+│       └── providers
 └── docker-compose.yml
 ```
 
 ## Funcionalidades implementadas
 
-- Autenticação JWT com `aluno`, `professor`, `empresa` e `admin`
-- Cadastro de aluno e empresa com login automático
-- CRUD inicial de vantagens com upload de imagem
-- Envio de moedas por professor para aluno (com validação de saldo)
-- Resgate de vantagens por aluno com geração de cupom único
-- Extrato/transações por usuário
-- Dashboard por perfil
-- Envio de e-mails (boas-vindas, recebimento de moedas, resgate)
-- Swagger em `/docs`
-- Seed com usuário admin e professores pré-cadastrados
+### Autenticacao e autorizacao
+- Login com JWT
+- Cadastro publico de aluno e empresa
+- Professores pre-cadastrados via seed
+- Middleware por perfil
 
-## Variáveis de ambiente
+### Fluxo do professor
+- Login no sistema
+- Visualizacao de alunos
+- Envio de moedas com mensagem obrigatoria
+- Validacao de saldo antes do envio
+- Debito no professor e credito no aluno
+- Registro de transacoes (`ENVIO` e `RECEBIMENTO`)
+- Credito semestral automatico (+1000 acumulativo no login por semestre)
 
-Copie os exemplos:
+### Fluxo do aluno
+- Cadastro com instituicao selecionada
+- Saldo inicial 0
+- Visualizacao de extrato
+- Visualizacao de vantagens
+- Resgate de vantagem com validacao de saldo
+- Geracao de cupom unico
+- Registro de transacao de `RESGATE`
+
+### Fluxo da empresa
+- Cadastro e login
+- Cadastro de vantagens (com upload opcional de foto)
+- Listagem de vantagens proprias
+- Visualizacao de cupons resgatados
+
+### Dashboards
+- Dashboard do aluno: saldo, extrato recente e trocas recentes
+- Dashboard do professor: saldo, envios e alunos reconhecidos
+- Dashboard da empresa: quantidade de vantagens e total de resgates
+- Dashboard admin: indicadores gerais
+
+## Banco de dados
+
+O projeto foi desenhado para PostgreSQL, mas para execucao local rapida esta configurado em SQLite.
+
+- Arquivo local do banco: `backend/dev.db`
+- Schema: `backend/prisma/schema.prisma`
+- Seed: `backend/prisma/seed.js`
+
+## Variaveis de ambiente
+
+Copie:
 
 - `backend/.env.example` -> `backend/.env`
 - `frontend/.env.example` -> `frontend/.env`
@@ -44,7 +116,7 @@ Copie os exemplos:
 ```env
 PORT=4000
 NODE_ENV=development
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/sme_db?schema=public
+DATABASE_URL="file:./dev.db"
 JWT_SECRET=super_secret_jwt
 JWT_EXPIRES_IN=1d
 SMTP_HOST=smtp.ethereal.email
@@ -61,74 +133,114 @@ FRONTEND_URL=http://localhost:5173
 VITE_API_URL=http://localhost:4000/api
 ```
 
-## Como rodar localmente
+## Como rodar localmente (recomendado)
 
-### 1) Subir PostgreSQL (Docker)
-
-```bash
-docker compose up -d db
-```
-
-### 2) Backend
+### Backend
 
 ```bash
 cd backend
 npm install
-npx prisma migrate dev --name init
+npx prisma db push
 npx prisma generate
 npm run prisma:seed
 npm run dev
 ```
 
-### 3) Frontend
+### Frontend
 
 ```bash
 cd frontend
 npm install
-npm run dev
+npm run dev -- --host
 ```
 
-## Rodando tudo com Docker Compose
+## URLs locais
 
-```bash
-docker compose up --build
-```
+- Frontend: [http://localhost:5173](http://localhost:5173)
+- API: [http://localhost:4000/api](http://localhost:4000/api)
+- Health: [http://localhost:4000/api/health](http://localhost:4000/api/health)
+- Swagger: [http://localhost:4000/docs](http://localhost:4000/docs)
+
+## Credenciais seed
+
+- Admin:
+  - email: `admin@sme.local`
+  - senha: `Admin@123`
+
+- Professor principal:
+  - login: `professor@dominio.com`
+  - senha: `12345678`
+
+- Professor alternativo:
+  - email/login: `professor2@sme.local`
+  - senha: `12345678`
 
 ## Endpoints principais
 
+### Auth
 - `POST /api/auth/register/aluno`
 - `POST /api/auth/register/empresa`
 - `POST /api/auth/login`
 - `GET /api/auth/me`
+
+### Core
+- `GET /api/instituicoes`
+- `GET /api/vantagens`
 - `GET /api/dashboard`
 - `GET /api/extrato`
+
+### Professor
+- `GET /api/professor/alunos`
 - `POST /api/professor/enviar-moedas`
+
+### Aluno
 - `POST /api/aluno/resgatar`
-- `GET /api/vantagens`
+- `GET /api/aluno/cupons`
+
+### Empresa
 - `POST /api/empresa/vantagens`
+- `GET /api/empresa/vantagens`
+- `GET /api/empresa/cupons`
 
-## Fluxo da aplicação
+## Fluxo funcional resumido
 
-1. Aluno/empresa realiza cadastro e recebe token JWT.
-2. Professor (pré-cadastrado) envia moedas para alunos com mensagem obrigatória.
-3. Aluno visualiza saldo/extrato e resgata vantagens disponíveis.
-4. Sistema gera cupom único e dispara e-mails para aluno e empresa.
-5. Admin acompanha métricas consolidadas no dashboard.
+1. Aluno/empresa se cadastra e recebe token JWT
+2. Professor pre-cadastrado faz login
+3. Professor envia moedas para aluno
+4. Aluno visualiza saldo e extrato
+5. Aluno resgata vantagem
+6. Sistema gera cupom e registra transacao
+7. Empresa visualiza cupons resgatados
 
-## Usuários seed
+## Scripts uteis
 
-- **Admin:** `admin@sme.local` / `Admin@123`
-- **Professores:** `professor1@sme.local` e `professor2@sme.local` / `Professor@123`
+### Backend
+- `npm run dev`
+- `npm run start`
+- `npm run prisma:seed`
+- `npm run prisma:generate`
+- `npm run lint`
 
-## Swagger e documentação
+### Frontend
+- `npm run dev`
+- `npm run build`
+- `npm run preview`
 
-- Acesse: [http://localhost:4000/docs](http://localhost:4000/docs)
+## Docker
 
-## Prints do sistema
+O arquivo `docker-compose.yml` esta no projeto.
+Atualmente a execucao validada nesta maquina foi em modo local (sem Docker), com banco SQLite.
 
-Você pode adicionar screenshots em uma pasta `docs/prints` e referenciar no README:
+## Troubleshooting
 
-```md
-![Login](docs/prints/login.png)
-![Dashboard](docs/prints/dashboard.png)
-```
+- Erro de login: rode novamente `npm run prisma:seed` no backend
+- Sem dados no sistema: confirme `npx prisma db push` + `npm run prisma:seed`
+- Erro de API no frontend: confira `VITE_API_URL` no `frontend/.env`
+- Email falhando: em ambiente local, o envio de email nao bloqueia os fluxos principais
+
+## Melhorias futuras sugeridas
+
+- Migrar novamente para PostgreSQL em producao
+- Testes automatizados (unit e integracao)
+- Painel admin completo com CRUDs e bloqueio de usuarios
+- Paginacao/filtros avancados em todas as listagens
