@@ -17,4 +17,15 @@ export const CupomDAO = {
   countByEmpresa(empresaId) {
     return prisma.cupom.count({ where: { vantagem: { empresaId } } });
   },
+  countByVantagemId(vantagemId) {
+    return prisma.cupom.count({ where: { vantagemId } });
+  },
+  /** Soma dos custos em moedas de todos os cupons resgatados nas vantagens da empresa. */
+  async sumMoedasResgatadasByEmpresa(empresaId) {
+    const rows = await prisma.cupom.findMany({
+      where: { vantagem: { empresaId } },
+      select: { vantagem: { select: { custoMoedas: true } } },
+    });
+    return rows.reduce((acc, row) => acc + row.vantagem.custoMoedas, 0);
+  },
 };

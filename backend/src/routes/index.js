@@ -17,6 +17,7 @@ import {
   listInstituicoes,
   listVantagens,
   resgatarVantagemHandler,
+  deleteVantagemHandler,
 } from "../controllers/core.controller.js";
 import { authenticate, authorize } from "../middlewares/auth.middleware.js";
 import { upload } from "../middlewares/upload.middleware.js";
@@ -47,5 +48,6 @@ router.post(
   upload.single("foto"),
   createVantagem,
 );
+router.delete("/empresa/vantagens/:id", authenticate, authorize("EMPRESA"), deleteVantagemHandler);
 
 export default router;

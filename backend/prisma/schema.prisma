@@ -110,6 +110,7 @@ model Vantagem {
   updatedAt   DateTime @updatedAt
   empresa     Empresa  @relation(fields: [empresaId], references: [id], onDelete: Cascade)
   cupons      Cupom[]
+  transacoesResgate Transacao[] @relation("ResgateVantagem")
 }
 
 model Transacao {
@@ -121,13 +122,16 @@ model Transacao {
   professorId      String?
   alunoOrigemId    String?
   alunoDestinoId   String?
+  vantagemId       String?
   createdAt        DateTime      @default(now())
   usuario          Usuario       @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
   professor        Professor?    @relation(fields: [professorId], references: [id], onDelete: SetNull)
   alunoOrigem      Aluno?        @relation("AlunoOrigem", fields: [alunoOrigemId], references: [id], onDelete: SetNull)
   alunoDestino     Aluno?        @relation("AlunoDestino", fields: [alunoDestinoId], references: [id], onDelete: SetNull)
+  vantagem         Vantagem?     @relation("ResgateVantagem", fields: [vantagemId], references: [id], onDelete: SetNull)
 
   @@index([usuarioId, createdAt])
+  @@index([vantagemId])
 }
 
 model Cupom {

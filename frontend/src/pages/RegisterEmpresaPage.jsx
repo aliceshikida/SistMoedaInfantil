@@ -20,6 +20,20 @@ const schema = z
     path: ['confirmacaoSenha'],
   })
 
+function GradCapIcon({ className }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+      <path
+        d="M4 10 12 6l8 4-8 4-8-4Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+      <path d="M8 12v3.5c0 1.5 2.2 2.5 4 2.5s4-1 4-2.5V12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 export function RegisterEmpresaPage() {
   const navigate = useNavigate()
   const { registerEmpresa } = useAuth()
@@ -27,46 +41,58 @@ export function RegisterEmpresaPage() {
   const { register, handleSubmit, formState } = useForm({ resolver: zodResolver(schema) })
 
   return (
-    <main className="auth-shell py-8">
-      <div className="auth-card">
-      <div className="mb-4 flex items-center justify-between">
-        <button type="button" onClick={() => navigate('/login')} className="btn-clean">
-          Voltar
-        </button>
+    <main className="auth-shell py-10">
+      <div className="auth-brand">
+        <div className="auth-brand-icon text-blue-600">
+          <GradCapIcon className="h-9 w-9" />
+        </div>
+        <h1 className="text-2xl font-bold text-white md:text-3xl">Cadastro de empresa</h1>
+        <p className="mt-2 max-w-md text-sm font-medium text-white/90">Parceiros que oferecem vantagens aos alunos.</p>
       </div>
-      <h1 className="mb-3 text-center text-2xl font-extrabold text-slate-900 dark:text-white">Cadastro de Empresa</h1>
-      <form
-        className="grid gap-2"
-        onSubmit={handleSubmit(async (values) => {
-          const toastId = toast.loading('Criando cadastro...')
-          setSubmitting(true)
-          try {
-            await registerEmpresa(values)
-            toast.update(toastId, { render: 'Empresa cadastrada com sucesso', type: 'success', isLoading: false, autoClose: 1200 })
-            navigate('/dashboard')
-          } catch (error) {
-            toast.update(toastId, {
-              render: error?.response?.data?.message || 'Erro ao cadastrar empresa',
-              type: 'error',
-              isLoading: false,
-              autoClose: 2500,
-            })
-          } finally {
-            setSubmitting(false)
-          }
-        })}
-      >
-        <input {...register('nome')} className="rounded-lg border border-slate-400 bg-white p-2.5 text-slate-900 placeholder-slate-500 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100" placeholder="Nome da empresa" />
-        <input {...register('email')} className="rounded-lg border border-slate-400 bg-white p-2.5 text-slate-900 placeholder-slate-500 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100" placeholder="Email" />
-        <input type="password" {...register('senha')} className="rounded-lg border border-slate-400 bg-white p-2.5 text-slate-900 placeholder-slate-500 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100" placeholder="Senha" />
-        <input type="password" {...register('confirmacaoSenha')} className="rounded-lg border border-slate-400 bg-white p-2.5 text-slate-900 placeholder-slate-500 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100" placeholder="Confirmação de senha" />
-        <input {...register('cnpj')} className="rounded-lg border border-slate-400 bg-white p-2.5 text-slate-900 placeholder-slate-500 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100" placeholder="CNPJ" />
-        <textarea {...register('descricao')} className="rounded-lg border border-slate-400 bg-white p-2.5 text-slate-900 placeholder-slate-500 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100" placeholder="Descrição da empresa" />
-        <p className="min-h-5 text-xs font-medium text-red-600 dark:text-red-400">{Object.values(formState.errors)[0]?.message}</p>
-        <button className="btn-primary disabled:cursor-not-allowed disabled:opacity-70" disabled={submitting}>
-          {submitting ? 'Cadastrando...' : 'Cadastrar Empresa'}
-        </button>
-      </form>
+
+      <div className="auth-card max-w-xl">
+        <div className="mb-4">
+          <button type="button" onClick={() => navigate('/login')} className="btn-secondary text-sm">
+            Voltar ao login
+          </button>
+        </div>
+        <h2 className="mb-4 text-center text-lg font-bold text-slate-900">Dados da empresa</h2>
+        <form
+          className="grid gap-3"
+          onSubmit={handleSubmit(async (values) => {
+            const toastId = toast.loading('Criando cadastro...')
+            setSubmitting(true)
+            try {
+              await registerEmpresa(values)
+              toast.update(toastId, { render: 'Empresa cadastrada com sucesso', type: 'success', isLoading: false, autoClose: 1200 })
+              navigate('/dashboard')
+            } catch (error) {
+              toast.update(toastId, {
+                render: error?.response?.data?.message || 'Erro ao cadastrar empresa',
+                type: 'error',
+                isLoading: false,
+                autoClose: 2500,
+              })
+            } finally {
+              setSubmitting(false)
+            }
+          })}
+        >
+          <input {...register('nome')} className="input-pill" placeholder="Nome da empresa" />
+          <input {...register('email')} className="input-pill" placeholder="Email" />
+          <input type="password" {...register('senha')} className="input-pill" placeholder="Senha" />
+          <input type="password" {...register('confirmacaoSenha')} className="input-pill" placeholder="Confirmação de senha" />
+          <input {...register('cnpj')} className="input-pill" placeholder="CNPJ" />
+          <textarea
+            {...register('descricao')}
+            className="min-h-28 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none placeholder:text-slate-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+            placeholder="Descrição da empresa"
+          />
+          <p className="min-h-5 text-xs font-medium text-red-600">{Object.values(formState.errors)[0]?.message}</p>
+          <button className="btn-primary disabled:cursor-not-allowed disabled:opacity-70" disabled={submitting}>
+            {submitting ? 'Cadastrando...' : 'Cadastrar Empresa'}
+          </button>
+        </form>
       </div>
     </main>
   )

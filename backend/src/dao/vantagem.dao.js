@@ -7,6 +7,12 @@ export const VantagemDAO = {
   findById(id, include = {}) {
     return prisma.vantagem.findUnique({ where: { id }, include });
   },
+  findByIdAndEmpresa(id, empresaId) {
+    return prisma.vantagem.findFirst({ where: { id, empresaId } });
+  },
+  deleteById(id) {
+    return prisma.vantagem.delete({ where: { id } });
+  },
   listPublic() {
     return prisma.vantagem.findMany({
       include: { empresa: { include: { usuario: true } } },

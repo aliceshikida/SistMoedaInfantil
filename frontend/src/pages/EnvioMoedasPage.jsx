@@ -15,7 +15,7 @@ export function EnvioMoedasPage() {
   return (
     <Layout title="Enviar Moedas">
       <form
-        className="mx-auto grid w-full max-w-2xl gap-3 rounded-2xl border border-slate-700 bg-slate-900 p-6"
+        className="surface-card mx-auto grid w-full max-w-2xl gap-4"
         onSubmit={async (event) => {
           event.preventDefault()
           const toastId = toast.loading('Enviando moedas...')
@@ -36,7 +36,7 @@ export function EnvioMoedasPage() {
         }}
       >
         <select
-          className="rounded-lg border border-slate-600 bg-slate-800 p-2.5 text-slate-100"
+          className="input-pill appearance-none bg-white"
           value={form.alunoId}
           onChange={(event) => setForm((prev) => ({ ...prev, alunoId: event.target.value }))}
         >
@@ -49,13 +49,13 @@ export function EnvioMoedasPage() {
         </select>
         <input
           type="number"
-          className="rounded-lg border border-slate-600 bg-slate-800 p-2.5 text-slate-100"
+          className="input-pill"
           placeholder="Quantidade"
           value={form.quantidade}
           onChange={(event) => setForm((prev) => ({ ...prev, quantidade: Number(event.target.value) }))}
         />
         <textarea
-          className="rounded-lg border border-slate-600 bg-slate-800 p-2.5 text-slate-100"
+          className="min-h-28 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none placeholder:text-slate-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
           placeholder="Mensagem obrigatória"
           value={form.mensagem}
           onChange={(event) => setForm((prev) => ({ ...prev, mensagem: event.target.value }))}

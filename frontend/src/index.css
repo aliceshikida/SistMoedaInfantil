@@ -1,5 +1,14 @@
 @import "tailwindcss";
-@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  /* Fundo geral: azul bem claro (contrasta com a sidebar escura em azul profundo) */
+  --color-app-bg: #d4e4f7;
+  --color-app-bg-deep: #c4d9f0;
+  --color-brand-600: #2563eb;
+  --color-brand-500: #3b82f6;
+  --color-brand-700: #1d4ed8;
+}
 
 @layer base {
   html,
@@ -9,33 +18,84 @@
   }
 
   body {
-    @apply bg-slate-900 text-slate-100;
+    @apply bg-app-bg text-slate-900 antialiased;
   }
 }
 
 @layer components {
   .auth-shell {
-    @apply flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 p-4;
+    @apply relative flex min-h-screen flex-col items-center justify-center overflow-auto px-4 py-10;
+    background: linear-gradient(145deg, #0b6bcb 0%, #0056b3 45%, #003d82 100%);
+  }
+
+  .auth-brand {
+    @apply mb-8 flex flex-col items-center text-center;
+  }
+
+  .auth-brand-icon {
+    @apply mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-md;
   }
 
   .auth-card {
-    @apply w-full max-w-xl rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-xl;
+    @apply w-full max-w-md rounded-[28px] bg-white p-8 shadow-xl shadow-slate-900/15;
+  }
+
+  .auth-tabs {
+    @apply mb-6 grid grid-cols-2 gap-1 rounded-full bg-slate-100 p-1;
+  }
+
+  .auth-tab {
+    @apply rounded-full px-4 py-2.5 text-center text-sm font-semibold text-slate-500 transition-colors;
+  }
+
+  .auth-tab-active {
+    background: linear-gradient(90deg, #1d4ed8 0%, #3b82f6 100%);
+    @apply text-white shadow-sm;
+  }
+
+  .field-label {
+    @apply mb-1.5 block text-sm font-semibold text-slate-600;
+  }
+
+  .input-pill {
+    @apply w-full rounded-full border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-100;
+  }
+
+  .input-pill-wrap {
+    @apply relative;
   }
 
   .btn-primary {
-    @apply rounded-lg bg-indigo-700 px-3 py-2.5 font-semibold text-white transition-all duration-200 ease-out transform-gpu hover:-translate-y-0.5 hover:bg-indigo-600 hover:shadow-lg active:translate-y-0 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500;
+    background: linear-gradient(90deg, #1d4ed8 0%, #3b82f6 100%);
+    @apply rounded-full px-4 py-3 text-center text-sm font-semibold text-white shadow-md transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 focus-visible:ring-offset-2 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60;
   }
 
   .btn-secondary {
-    @apply rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm font-semibold text-white transition-all duration-200 ease-out transform-gpu hover:-translate-y-0.5 hover:bg-slate-700 hover:shadow-lg active:translate-y-0 active:scale-[0.98] dark:border-slate-200 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white;
+    @apply rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-200;
   }
 
   .btn-clean {
-    @apply rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm font-medium text-slate-200 transition-all duration-200 ease-out transform-gpu hover:-translate-y-0.5 hover:bg-slate-700 hover:shadow-lg active:translate-y-0 active:scale-[0.98];
+    @apply rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50;
   }
 
   .btn-danger {
-    @apply rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold text-white transition-all duration-200 ease-out transform-gpu hover:-translate-y-0.5 hover:bg-red-500 hover:shadow-lg active:translate-y-0 active:scale-[0.98];
+    @apply rounded-full bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300;
+  }
+
+  .app-shell {
+    min-height: 100vh;
+    background: linear-gradient(160deg, var(--color-app-bg) 0%, var(--color-app-bg-deep) 42%, #b8cef0 100%);
+  }
+
+  .sidebar-nav-link {
+    @apply flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-blue-100/95 transition hover:bg-white/10 hover:text-white;
+  }
+
+  .sidebar-nav-link-active {
+    @apply bg-white/15 font-semibold text-white shadow-sm ring-1 ring-white/20;
+  }
+
+  .surface-card {
+    @apply rounded-2xl border border-slate-100 bg-white p-5 shadow-sm;
   }
 }
-
