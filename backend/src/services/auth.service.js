@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import { Role } from "@prisma/client";
+import { Role, StatusUsuario } from "@prisma/client";
 import { AlunoDAO } from "../dao/aluno.dao.js";
 import { EmpresaDAO } from "../dao/empresa.dao.js";
 import { UsuarioDAO } from "../dao/usuario.dao.js";
@@ -84,8 +84,12 @@ export async function registerEmpresa(data) {
 }
 
 export async function login({ email, senha }) {
-  const user = await UsuarioDAO.findByEmailOrNome(email);
+  const key = String(email ?? "").trim();
+  const user = await UsuarioDAO.findByEmailOrNome(key);
   if (!user) throw { status: 401, message: "Credenciais inválidas." };
+  if (user.status === StatusUsuario.BLOQUEADO) {
+    throw { status: 401, message: "Conta bloqueada. Entre em contato com o suporte." };
+  }
   const ok = await bcrypt.compare(senha, user.senhaHash);
   if (!ok) throw { status: 401, message: "Credenciais inválidas." };
   if (user.role === Role.PROFESSOR) {

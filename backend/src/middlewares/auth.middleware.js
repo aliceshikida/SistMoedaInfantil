@@ -1,3 +1,4 @@
+import { StatusUsuario } from "@prisma/client";
 import { UsuarioDAO } from "../dao/usuario.dao.js";
 import { verifyToken } from "../utils/token.js";
 
@@ -8,7 +9,8 @@ export async function authenticate(req, _res, next) {
     if (!token) return next({ status: 401, message: "Token ausente." });
     const payload = verifyToken(token);
     const user = await UsuarioDAO.findById(payload.sub);
-    if (!user || user.status !== "ATIVO") {
+    const blocked = user?.status === StatusUsuario.BLOQUEADO;
+    if (!user || blocked) {
       return next({ status: 401, message: "Usuário inválido ou bloqueado." });
     }
     req.user = user;

@@ -33,12 +33,20 @@ export const api = axios.create({
 
 /**
  * URL absoluta para ficheiros na raiz do backend (`/uploads/...`), fora de `/api`.
- * Em dev sem VITE_API_URL usa o mesmo host do Vite + proxy para `/uploads`.
+ * Em dev, `/uploads` deve ir pelo mesmo host do Vite (proxy em vite.config.js), mesmo
+ * com `VITE_API_URL` apontando para outra origem — evita falhas ao carregar `<img>`.
  */
 export function resolvePublicFileUrl(relativePath) {
   if (!relativePath) return ''
-  if (/^https?:\/\//i.test(relativePath)) return relativePath
-  const path = relativePath.startsWith('/') ? relativePath : `/${relativePath}`
+  const raw = String(relativePath).trim().replace(/\\/g, '/')
+  if (/^https?:\/\//i.test(raw)) return raw
+  const path = raw.startsWith('/') ? raw : `/${raw}`
+  const isUpload = path === '/uploads' || path.startsWith('/uploads/')
+
+  if (import.meta.env.DEV && typeof window !== 'undefined' && isUpload) {
+    return `${window.location.origin}${path}`
+  }
+
   const base = getApiBaseURL()
   if (base.startsWith('/')) {
     const origin = typeof window !== 'undefined' ? window.location.origin : ''
