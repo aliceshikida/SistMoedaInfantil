@@ -13,6 +13,31 @@ function authResponse(user) {
   return { token, user: { id: user.id, nome: user.nome, email: user.email, role: user.role } };
 }
 
+export async function registerEmpresa(data) {
+  const { nome, email, senha, confirmacaoSenha, cnpj, descricao } = data;
+  if (senha !== confirmacaoSenha) throw { status: 400, message: "Confirmação de senha inválida." };
+  if (!isValidCnpj(cnpj)) throw { status: 400, message: "CNPJ inválido." };
+  const exists = await UsuarioDAO.findByEmail(email);
+  if (exists) throw { status: 409, message: "Email já cadastrado." };
+  const senhaHash = await bcrypt.hash(senha, 10);
+  
+  const user = await UsuarioDAO.create({
+    nome,
+    email,
+    senhaHash,
+    role: Role.EMPRESA,
+    empresa: { create: { cnpj: onlyDigits(cnpj), descricao } },
+  });
+  
+  await sendMail({
+    to: email,
+    subject: "Cadastro de empresa realizado",
+    title: `Bem-vinda, ${nome}`,
+    body: "<p>Agora sua empresa já pode cadastrar vantagens.</p>",
+  });
+  return authResponse(user);
+}
+
 export async function registerAluno(data) {
   const {
     nome,
@@ -25,14 +50,15 @@ export async function registerAluno(data) {
     instituicaoId,
     curso,
   } = data;
+  
   if (senha !== confirmacaoSenha) throw { status: 400, message: "Confirmação de senha inválida." };
-  if (!cpfHasElevenDigits(cpf)) throw { status: 400, message: "CPF deve ter 11 dígitos." };
-  const cpfDigits = onlyDigits(cpf);
-  const cpfEmUso = await AlunoDAO.findByCpf(cpfDigits);
-  if (cpfEmUso) throw { status: 409, message: "CPF já cadastrado. Use outro CPF ou faça login se já possui conta." };
+  if (!isValidCpf(cpf)) throw { status: 400, message: "CPF inválido." };
+  
   const exists = await UsuarioDAO.findByEmail(email);
   if (exists) throw { status: 409, message: "Email já cadastrado." };
+  
   const senhaHash = await bcrypt.hash(senha, 10);
+  
   const user = await UsuarioDAO.create({
     nome,
     email,
@@ -40,7 +66,7 @@ export async function registerAluno(data) {
     role: Role.ALUNO,
     aluno: {
       create: {
-        cpf: cpfDigits,
+        cpf: onlyDigits(cpf),
         rg,
         endereco,
         instituicaoId,
@@ -48,38 +74,14 @@ export async function registerAluno(data) {
       },
     },
   });
+  
   await sendMail({
     to: email,
     subject: "Bem-vindo ao Sistema de Moeda Estudantil",
     title: `Olá, ${nome}!`,
     body: "<p>Seu cadastro foi concluído com sucesso.</p>",
   });
-  return authResponse(user);
-}
-
-export async function registerEmpresa(data) {
-  const { nome, email, senha, confirmacaoSenha, cnpj, descricao } = data;
-  if (senha !== confirmacaoSenha) throw { status: 400, message: "Confirmação de senha inválida." };
-  if (!isValidCnpj(cnpj)) throw { status: 400, message: "CNPJ inválido." };
-  const cnpjDigits = onlyDigits(cnpj);
-  const cnpjEmUso = await EmpresaDAO.findByCnpj(cnpjDigits);
-  if (cnpjEmUso) throw { status: 409, message: "CNPJ já cadastrado. Use outro CNPJ ou faça login se já possui conta." };
-  const exists = await UsuarioDAO.findByEmail(email);
-  if (exists) throw { status: 409, message: "Email já cadastrado." };
-  const senhaHash = await bcrypt.hash(senha, 10);
-  const user = await UsuarioDAO.create({
-    nome,
-    email,
-    senhaHash,
-    role: Role.EMPRESA,
-    empresa: { create: { cnpj: cnpjDigits, descricao } },
-  });
-  await sendMail({
-    to: email,
-    subject: "Cadastro de empresa realizado",
-    title: `Bem-vinda, ${nome}`,
-    body: "<p>Agora sua empresa já pode cadastrar vantagens.</p>",
-  });
+  
   return authResponse(user);
 }
 
