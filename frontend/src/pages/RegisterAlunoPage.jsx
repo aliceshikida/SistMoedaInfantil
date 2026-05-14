@@ -7,13 +7,17 @@ import { z } from 'zod'
 import { api } from '../lib/api'
 import { useAuth } from '../providers/AuthProvider'
 
+function cpfDigits(value) {
+  return String(value || '').replace(/\D/g, '')
+}
+
 const schema = z
   .object({
     nome: z.string().min(3),
     email: z.string().email(),
     senha: z.string().min(8),
     confirmacaoSenha: z.string().min(8),
-    cpf: z.string().min(11),
+    cpf: z.string().min(1),
     rg: z.string().min(4),
     endereco: z.string().min(5),
     instituicaoId: z.string().min(1),
@@ -22,6 +26,10 @@ const schema = z
   .refine((data) => data.senha === data.confirmacaoSenha, {
     message: 'As senhas não conferem',
     path: ['confirmacaoSenha'],
+  })
+  .refine((data) => cpfDigits(data.cpf).length === 11, {
+    message: 'CPF deve ter 11 dígitos',
+    path: ['cpf'],
   })
 
 function GradCapIcon({ className }) {
@@ -59,7 +67,7 @@ export function RegisterAlunoPage() {
         <p className="mt-2 max-w-md text-sm font-medium text-white/90">Preencha os dados para criar sua conta.</p>
       </div>
 
-      <div className="auth-card max-h-[min(80vh,720px)] max-w-xl overflow-y-auto">
+      <div className="auth-card auth-card-scroll max-h-[min(80vh,720px)] max-w-xl">
         <div className="mb-4">
           <button type="button" onClick={() => navigate('/login')} className="btn-secondary text-sm">
             Voltar ao login

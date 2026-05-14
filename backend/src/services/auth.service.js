@@ -1,7 +1,9 @@
 import bcrypt from "bcryptjs";
 import { Role } from "@prisma/client";
+import { AlunoDAO } from "../dao/aluno.dao.js";
+import { EmpresaDAO } from "../dao/empresa.dao.js";
 import { UsuarioDAO } from "../dao/usuario.dao.js";
-import { isValidCnpj, isValidCpf, onlyDigits } from "../utils/docValidator.js";
+import { cpfHasElevenDigits, isValidCnpj, onlyDigits } from "../utils/docValidator.js";
 import { signToken } from "../utils/token.js";
 import { sendMail } from "./email.service.js";
 import { creditSemesterCoinsIfNeeded } from "./professor.service.js";
@@ -24,24 +26,25 @@ export async function registerAluno(data) {
     curso,
   } = data;
   if (senha !== confirmacaoSenha) throw { status: 400, message: "Confirmação de senha inválida." };
-  if (!isValidCpf(cpf)) throw { status: 400, message: "CPF inválido." };
+  if (!cpfHasElevenDigits(cpf)) throw { status: 400, message: "CPF deve ter 11 dígitos." };
+  const cpfDigits = onlyDigits(cpf);
+  const cpfEmUso = await AlunoDAO.findByCpf(cpfDigits);
+  if (cpfEmUso) throw { status: 409, message: "CPF já cadastrado. Use outro CPF ou faça login se já possui conta." };
   const exists = await UsuarioDAO.findByEmail(email);
   if (exists) throw { status: 409, message: "Email já cadastrado." };
   const senhaHash = await bcrypt.hash(senha, 10);
   const user = await UsuarioDAO.create({
-    data: {
-      nome,
-      email,
-      senhaHash,
-      role: Role.ALUNO,
-      aluno: {
-        create: {
-          cpf: onlyDigits(cpf),
-          rg,
-          endereco,
-          instituicaoId,
-          curso,
-        },
+    nome,
+    email,
+    senhaHash,
+    role: Role.ALUNO,
+    aluno: {
+      create: {
+        cpf: cpfDigits,
+        rg,
+        endereco,
+        instituicaoId,
+        curso,
       },
     },
   });
@@ -58,17 +61,18 @@ export async function registerEmpresa(data) {
   const { nome, email, senha, confirmacaoSenha, cnpj, descricao } = data;
   if (senha !== confirmacaoSenha) throw { status: 400, message: "Confirmação de senha inválida." };
   if (!isValidCnpj(cnpj)) throw { status: 400, message: "CNPJ inválido." };
+  const cnpjDigits = onlyDigits(cnpj);
+  const cnpjEmUso = await EmpresaDAO.findByCnpj(cnpjDigits);
+  if (cnpjEmUso) throw { status: 409, message: "CNPJ já cadastrado. Use outro CNPJ ou faça login se já possui conta." };
   const exists = await UsuarioDAO.findByEmail(email);
   if (exists) throw { status: 409, message: "Email já cadastrado." };
   const senhaHash = await bcrypt.hash(senha, 10);
   const user = await UsuarioDAO.create({
-    data: {
-      nome,
-      email,
-      senhaHash,
-      role: Role.EMPRESA,
-      empresa: { create: { cnpj: onlyDigits(cnpj), descricao } },
-    },
+    nome,
+    email,
+    senhaHash,
+    role: Role.EMPRESA,
+    empresa: { create: { cnpj: cnpjDigits, descricao } },
   });
   await sendMail({
     to: email,

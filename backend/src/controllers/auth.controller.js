@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { UsuarioDAO } from "../dao/usuario.dao.js";
+import { onlyDigits } from "../utils/docValidator.js";
 import { login, registerAluno, registerEmpresa } from "../services/auth.service.js";
 
 const alunoSchema = z.object({
@@ -7,7 +8,7 @@ const alunoSchema = z.object({
   email: z.string().email(),
   senha: z.string().min(8),
   confirmacaoSenha: z.string().min(8),
-  cpf: z.string().min(11),
+  cpf: z.string().refine((val) => onlyDigits(val).length === 11, { message: "CPF deve ter 11 dígitos." }),
   rg: z.string().min(4),
   endereco: z.string().min(5),
   instituicaoId: z.string().min(1),

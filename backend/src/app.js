@@ -17,7 +17,14 @@ app.use(
     crossOriginResourcePolicy: { policy: 'cross-origin' },
   }),
 );
-app.use(cors({ origin: env.frontendUrl }));
+app.use(
+  cors({
+    origin:
+      env.nodeEnv === "development"
+        ? true
+        : env.frontendUrl,
+  }),
+);
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

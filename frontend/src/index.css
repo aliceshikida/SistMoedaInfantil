@@ -22,10 +22,62 @@
   }
 }
 
+@keyframes auth-tab-from-right {
+  from {
+    opacity: 0;
+    transform: translateX(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes auth-tab-from-left {
+  from {
+    opacity: 0;
+    transform: translateX(-18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
 @layer components {
+  /* Área auth: rola quando precisa; barra de scroll fica invisível (touch/rato continuam a funcionar) */
   .auth-shell {
-    @apply relative flex min-h-screen flex-col items-center justify-center overflow-auto px-4 py-10;
+    @apply relative flex min-h-dvh flex-col items-center justify-center overflow-x-hidden overflow-y-auto px-4 py-10;
     background: linear-gradient(145deg, #0b6bcb 0%, #0056b3 45%, #003d82 100%);
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .auth-shell::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+
+  /* Cartão com formulário longo (ex.: cadastro aluno): scroll interno sem barra visível */
+  .auth-card-scroll {
+    @apply overflow-y-auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .auth-card-scroll::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+
+  .auth-tab-panel--from-right {
+    animation: auth-tab-from-right 0.36s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .auth-tab-panel--from-left {
+    animation: auth-tab-from-left 0.36s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 
   .auth-brand {
@@ -45,7 +97,7 @@
   }
 
   .auth-tab {
-    @apply rounded-full px-4 py-2.5 text-center text-sm font-semibold text-slate-500 transition-colors;
+    @apply rounded-full px-4 py-2.5 text-center text-sm font-semibold text-slate-500 transition-all duration-200 active:scale-[0.98];
   }
 
   .auth-tab-active {

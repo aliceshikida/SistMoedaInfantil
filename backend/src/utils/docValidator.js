@@ -2,6 +2,11 @@ export function onlyDigits(value) {
   return String(value || "").replace(/\D/g, "");
 }
 
+/** CPF no cadastro: apenas 11 dígitos (não valida dígitos verificadores). */
+export function cpfHasElevenDigits(rawCpf) {
+  return onlyDigits(rawCpf).length === 11;
+}
+
 export function isValidCpf(rawCpf) {
   const cpf = onlyDigits(rawCpf);
   if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;

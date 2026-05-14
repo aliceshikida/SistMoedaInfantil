@@ -115,7 +115,7 @@ export function VantagensPage() {
           </button>
         </form>
       )}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid items-start gap-4 md:grid-cols-2 lg:grid-cols-3">
         {items.length === 0 && (
           <div className="surface-card col-span-full text-center text-sm text-slate-500">Nenhuma vantagem cadastrada.</div>
         )}
@@ -134,16 +134,16 @@ export function VantagensPage() {
                 <img
                   src={resolvePublicFileUrl(item.foto)}
                   alt=""
-                  className="pointer-events-none h-40 w-full object-cover"
+                  className="pointer-events-none h-28 w-full object-cover sm:h-32"
                   loading="lazy"
                 />
-                <p className="border-t border-slate-100 bg-slate-50 px-3 py-2 text-center text-xs font-medium text-slate-600">
+                <p className="border-t border-slate-100 bg-slate-50 px-2 py-1.5 text-center text-[11px] font-medium text-slate-600 sm:px-3 sm:py-2 sm:text-xs">
                   Clique para ver a foto em tamanho maior
                 </p>
               </div>
             ) : null}
             <h3 className="font-semibold text-slate-900">{item.titulo}</h3>
-            <p className="mt-1 flex-1 text-sm text-slate-500">{item.descricao}</p>
+            <p className="mt-1 line-clamp-3 text-sm text-slate-500">{item.descricao}</p>
             <p className="mt-3 text-sm font-semibold text-blue-600">{item.custoMoedas} moedas</p>
             {user?.role === 'EMPRESA' && (
               <button
@@ -222,12 +222,12 @@ export function VantagensPage() {
           {cuponsResgatados.length === 0 ? (
             <div className="surface-card text-center text-sm text-slate-500">Você ainda não resgatou nenhuma vantagem.</div>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid items-start gap-4 md:grid-cols-2 lg:grid-cols-3">
               {cuponsResgatados.map((cupom) => (
                 <article key={cupom.id} className="surface-card flex flex-col gap-2">
                   <h3 className="font-semibold text-slate-900">{cupom.vantagem?.titulo ?? 'Vantagem'}</h3>
                   {cupom.vantagem?.descricao ? (
-                    <p className="line-clamp-3 flex-1 text-sm text-slate-500">{cupom.vantagem.descricao}</p>
+                    <p className="line-clamp-3 text-sm text-slate-500">{cupom.vantagem.descricao}</p>
                   ) : null}
                   <p className="text-xs text-slate-500">
                     Empresa:{' '}

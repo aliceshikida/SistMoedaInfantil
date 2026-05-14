@@ -1,6 +1,9 @@
 import { prisma } from "../prisma/client.js";
 
 export const AlunoDAO = {
+  findByCpf(cpf) {
+    return prisma.aluno.findUnique({ where: { cpf } });
+  },
   findById(id, include = {}) {
     return prisma.aluno.findUnique({ where: { id }, include });
   },

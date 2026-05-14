@@ -50,6 +50,22 @@ export function LoginPage() {
   const [tab, setTab] = useState('login')
   const [showSenha, setShowSenha] = useState(false)
   const { register, handleSubmit, formState } = useForm({ resolver: zodResolver(schema) })
+  const [panelAnim, setPanelAnim] = useState(null)
+
+  const goLogin = () => {
+    if (tab === 'login') return
+    setTab('login')
+    setPanelAnim('from-left')
+  }
+
+  const goCadastrar = () => {
+    if (tab === 'cadastrar') return
+    setTab('cadastrar')
+    setPanelAnim('from-right')
+  }
+
+  const panelAnimClass =
+    panelAnim === 'from-right' ? 'auth-tab-panel--from-right' : panelAnim === 'from-left' ? 'auth-tab-panel--from-left' : ''
 
   return (
     <main className="auth-shell">
@@ -68,19 +84,20 @@ export function LoginPage() {
           <button
             type="button"
             className={tab === 'login' ? 'auth-tab auth-tab-active' : 'auth-tab'}
-            onClick={() => setTab('login')}
+            onClick={goLogin}
           >
             Login
           </button>
           <button
             type="button"
             className={tab === 'cadastrar' ? 'auth-tab auth-tab-active' : 'auth-tab'}
-            onClick={() => setTab('cadastrar')}
+            onClick={goCadastrar}
           >
             Cadastrar
           </button>
         </div>
 
+        <div key={tab} className={panelAnimClass}>
         {tab === 'login' ? (
           <form
             onSubmit={handleSubmit(async (values) => {
@@ -145,7 +162,7 @@ export function LoginPage() {
 
             <p className="mt-6 text-center text-sm text-slate-600">
               Não tem uma conta?{' '}
-              <button type="button" className="font-semibold text-blue-600 hover:underline" onClick={() => setTab('cadastrar')}>
+              <button type="button" className="font-semibold text-blue-600 hover:underline" onClick={goCadastrar}>
                 Cadastre-se
               </button>
             </p>
@@ -163,12 +180,13 @@ export function LoginPage() {
             </div>
             <p className="mt-6 text-center text-sm text-slate-600">
               Já tem conta?{' '}
-              <button type="button" className="font-semibold text-blue-600 hover:underline" onClick={() => setTab('login')}>
+              <button type="button" className="font-semibold text-blue-600 hover:underline" onClick={goLogin}>
                 Fazer login
               </button>
             </p>
           </div>
         )}
+        </div>
       </div>
 
       <p className="mt-10 text-center text-xs text-white/75">© {new Date().getFullYear()} Sistema de Moeda Estudantil</p>
