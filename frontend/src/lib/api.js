@@ -27,6 +27,40 @@ function getApiBaseURL() {
   return import.meta.env.DEV ? '/api' : 'http://localhost:4000/api'
 }
 
+/** Segmentos do caminho codificados (espaços e caracteres especiais no nome do ficheiro). */
+function encodeUploadPath(p) {
+  const parts = String(p).split('/').filter(Boolean)
+  if (parts.length === 0) return '/'
+  return `/${parts.map((seg) => encodeURIComponent(seg)).join('/')}`
+}
+
+/** Origem onde o Express serve `/uploads` (fora de `/api`). */
+function getBackendPublicOrigin() {
+  const explicit = String(import.meta.env.VITE_PUBLIC_FILES_ORIGIN || '').trim()
+  if (explicit) return stripTrailingSlashes(explicit)
+
+  const base = getApiBaseURL()
+  if (base.startsWith('/')) {
+    if (import.meta.env.DEV && typeof window !== 'undefined') {
+      return stripTrailingSlashes(window.location.origin)
+    }
+    if (typeof window !== 'undefined' && import.meta.env.PROD) {
+      const api = String(import.meta.env.VITE_API_URL || '').trim()
+      if (!api) {
+        console.warn(
+          '[SME] Fotos em /uploads: defina VITE_API_URL com URL absoluta do backend (ex. https://api.teuservico.com/api) ou VITE_PUBLIC_FILES_ORIGIN (só a origem, ex. https://api.teuservico.com). Caso contrário o pedido da imagem vai para o host do site (ex. Vercel) e falha.',
+        )
+      }
+    }
+    return typeof window !== 'undefined' ? stripTrailingSlashes(window.location.origin) : ''
+  }
+  try {
+    return new URL(base).origin
+  } catch {
+    return 'http://localhost:4000'
+  }
+}
+
 export const api = axios.create({
   baseURL: getApiBaseURL(),
 })
@@ -42,21 +76,18 @@ export function resolvePublicFileUrl(relativePath) {
   if (/^https?:\/\//i.test(raw)) return raw
   const path = raw.startsWith('/') ? raw : `/${raw}`
   const isUpload = path === '/uploads' || path.startsWith('/uploads/')
+  const safePath = encodeUploadPath(path)
 
   if (import.meta.env.DEV && typeof window !== 'undefined' && isUpload) {
-    return `${window.location.origin}${path}`
+    return `${stripTrailingSlashes(window.location.origin)}${safePath}`
   }
 
-  const base = getApiBaseURL()
-  if (base.startsWith('/')) {
-    const origin = typeof window !== 'undefined' ? window.location.origin : ''
-    return `${origin}${path}`
-  }
+  const origin = getBackendPublicOrigin()
+  if (!origin) return safePath
   try {
-    const origin = new URL(base).origin
-    return `${origin}${path}`
+    return new URL(safePath, `${origin}/`).href
   } catch {
-    return `http://localhost:4000${path}`
+    return `${origin}${safePath}`
   }
 }
 

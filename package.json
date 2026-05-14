@@ -1,5 +1,11 @@
 {
   "name": "sist-moeda-infantil",
   "private": true,
-  "description": "Raiz do repo: a app web está em frontend/. Usado pelo Vercel quando o Root Directory é o repositório."
+  "description": "Raiz do repo: a app web está em frontend/. Usado pelo Vercel quando o Root Directory é o repositório.",
+  "scripts": {
+    "dev": "npm run dev --prefix frontend",
+    "dev:frontend": "npm run dev --prefix frontend",
+    "dev:backend": "npm run dev --prefix backend",
+    "build": "npm run build --prefix frontend"
+  }
 }

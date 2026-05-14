@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'react-toastify'
 import { Layout } from '../components/Layout'
 import { api, resolvePublicFileUrl } from '../lib/api'
@@ -24,6 +24,16 @@ export function VantagensPage() {
   const [deletingId, setDeletingId] = useState(null)
   const [fotoModal, setFotoModal] = useState(null)
   const { user } = useAuth()
+
+  const fotoFormPreviewUrl = useMemo(
+    () => (form.foto instanceof File ? URL.createObjectURL(form.foto) : null),
+    [form.foto],
+  )
+  useEffect(() => {
+    return () => {
+      if (fotoFormPreviewUrl) URL.revokeObjectURL(fotoFormPreviewUrl)
+    }
+  }, [fotoFormPreviewUrl])
 
   async function loadData() {
     const endpoint = user?.role === 'EMPRESA' ? '/empresa/vantagens' : '/vantagens'
@@ -107,9 +117,20 @@ export function VantagensPage() {
           />
           <input
             type="file"
+            accept="image/*"
             className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 file:mr-3 file:rounded-full file:border-0 file:bg-blue-600 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-blue-500"
             onChange={(event) => setForm((prev) => ({ ...prev, foto: event.target.files?.[0] || null }))}
           />
+          {fotoFormPreviewUrl ? (
+            <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50 p-2">
+              <p className="mb-2 text-xs font-medium text-slate-600">Pré-visualização (será enviada ao salvar)</p>
+              <img
+                src={fotoFormPreviewUrl}
+                alt=""
+                className="mx-auto max-h-40 w-full max-w-md rounded-lg object-contain"
+              />
+            </div>
+          ) : null}
           <button className="btn-primary disabled:cursor-not-allowed disabled:opacity-70" disabled={submitting}>
             {submitting ? 'Salvando...' : 'Salvar vantagem'}
           </button>
@@ -136,6 +157,10 @@ export function VantagensPage() {
                   alt=""
                   className="pointer-events-none h-28 w-full object-cover sm:h-32"
                   loading="lazy"
+                  referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    console.error('[SME] Falha ao carregar foto da vantagem', item.id, e.currentTarget.src)
+                  }}
                 />
                 <p className="border-t border-slate-100 bg-slate-50 px-2 py-1.5 text-center text-[11px] font-medium text-slate-600 sm:px-3 sm:py-2 sm:text-xs">
                   Clique para ver a foto em tamanho maior
