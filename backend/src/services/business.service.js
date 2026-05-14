@@ -65,7 +65,6 @@ function cupomCodigoHtml(codigo) {
   return `<p style="margin:16px 0;padding:16px;background:#f1f5f9;border-radius:10px;text-align:center;font-size:20px;letter-spacing:0.12em;font-weight:700;color:#0f172a;font-family:ui-monospace,monospace">${codigo}</p>`;
 }
 
-/** Professores que já enviaram moedas a este aluno (transações de recebimento). */
 async function listProfessoresQueEnviaramMoedasAluno(usuarioIdAluno) {
   const rows = await prisma.transacao.findMany({
     where: {
@@ -125,6 +124,8 @@ export async function resgatarVantagem({ alunoUserId, vantagemId }) {
 
   const codigoBloco = cupomCodigoHtml(cupom.codigo);
   const nomeAluno = aluno.usuario.nome;
+  
+  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
 
   await sendMail({
     to: aluno.usuario.email,
@@ -135,6 +136,7 @@ export async function resgatarVantagem({ alunoUserId, vantagemId }) {
 <p>Use o código abaixo na <strong>troca presencial</strong> (apresente na hora da retirada ou validação):</p>
 ${codigoBloco}
 <p style="font-size:13px;color:#64748b">Guarde este e-mail ou anote o código. Ele é o mesmo informado à escola para conferência.</p>`,
+    linkQrCode: `${frontendUrl}/vantagem/${vantagem.id}`
   });
 
   const professores = await listProfessoresQueEnviaramMoedasAluno(aluno.usuarioId);
