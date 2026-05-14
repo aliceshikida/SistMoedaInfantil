@@ -1,0 +1,5 @@
+{
+  "name": "sist-moeda-infantil",
+  "private": true,
+  "description": "Raiz do repo: a app web está em frontend/. Usado pelo Vercel quando o Root Directory é o repositório."
+}
