@@ -121,6 +121,7 @@ JWT_SECRET=super_secret_jwt
 JWT_EXPIRES_IN=1d
 SMTP_HOST=smtp.ethereal.email
 SMTP_PORT=587
+# É necessário entrar no ethereal, gerar as credenciais e altera-las abaixo para vizualizar os emails
 SMTP_USER=user
 SMTP_PASS=pass
 SMTP_FROM="Sistema de Moeda Estudantil <noreply@sme.local>"
@@ -140,8 +141,9 @@ VITE_API_URL=http://localhost:4000/api
 ```bash
 cd backend
 npm install
-npx prisma db push
+npm install qrcode
 npx prisma generate
+npx prisma db push
 npm run prisma:seed
 npm run dev
 ```
