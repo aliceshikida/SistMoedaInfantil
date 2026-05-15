@@ -9,6 +9,25 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { PrismaClient } from "@prisma/client";
 
+function describeDbTarget() {
+  const u = process.env.DATABASE_URL || "";
+  if (!u) return "(DATABASE_URL não definido)";
+  if (u.startsWith("file:")) {
+    const short = u.replace(/^file:\.?\//, "").replace(/^\.\//, "");
+    return `SQLite local (${short})`;
+  }
+  if (/postgres(ql)?:/i.test(u)) {
+    const host = u.match(/@([^/?]+)/)?.[1];
+    return host ? `Postgres remoto (@${host})` : "Postgres";
+  }
+  return "DATABASE_URL (outro provider)";
+}
+
+console.warn(
+  `[SME] wipe-vantagens: a apagar dados em → ${describeDbTarget()}\n` +
+    "    Se no Vercel ainda vês vantagens, o site usa outra API/base: define DATABASE_URL da PRODUÇÃO neste terminal antes do comando (não sobrescreve variáveis já definidas).",
+);
+
 const prisma = new PrismaClient();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const UPLOADS_DIR = path.join(__dirname, "..", "uploads");

@@ -27,6 +27,25 @@ function getApiBaseURL() {
   return import.meta.env.DEV ? '/api' : 'http://localhost:4000/api'
 }
 
+/** URL absoluta da API para inferir o host onde o Express serve `/uploads` (fora de `/api`). */
+function normalizeAbsoluteApiUrl(raw) {
+  const s = String(raw ?? '').trim()
+  if (!s || s.startsWith('/')) return ''
+  if (s.startsWith('http://') || s.startsWith('https://')) return s
+  return `https://${s}`
+}
+
+/** Origem do backend (scheme + host [+ porta]) a partir de `VITE_API_URL`, ex. `https://api.onrender.com/api` → `https://api.onrender.com`. */
+function backendOriginFromViteApiUrl() {
+  const normalized = normalizeAbsoluteApiUrl(import.meta.env.VITE_API_URL)
+  if (!normalized) return ''
+  try {
+    return stripTrailingSlashes(new URL(normalized).origin)
+  } catch {
+    return ''
+  }
+}
+
 /** Segmentos do caminho codificados (espaços e caracteres especiais no nome do ficheiro). */
 function encodeUploadPath(p) {
   const parts = String(p).split('/').filter(Boolean)
@@ -39,26 +58,34 @@ function getBackendPublicOrigin() {
   const explicit = String(import.meta.env.VITE_PUBLIC_FILES_ORIGIN || '').trim()
   if (explicit) return stripTrailingSlashes(explicit)
 
+  const fromViteApi = backendOriginFromViteApiUrl()
+  if (fromViteApi) return fromViteApi
+
   const base = getApiBaseURL()
-  if (base.startsWith('/')) {
-    if (import.meta.env.DEV && typeof window !== 'undefined') {
-      return stripTrailingSlashes(window.location.origin)
-    }
-    if (typeof window !== 'undefined' && import.meta.env.PROD) {
-      const api = String(import.meta.env.VITE_API_URL || '').trim()
-      if (!api) {
-        console.warn(
-          '[SME] Fotos em /uploads: defina VITE_API_URL com URL absoluta do backend (ex. https://api.teuservico.com/api) ou VITE_PUBLIC_FILES_ORIGIN (só a origem, ex. https://api.teuservico.com). Caso contrário o pedido da imagem vai para o host do site (ex. Vercel) e falha.',
-        )
-      }
-    }
-    return typeof window !== 'undefined' ? stripTrailingSlashes(window.location.origin) : ''
+  if (import.meta.env.PROD && !fromViteApi && !explicit && base.includes('localhost')) {
+    console.warn(
+      '[SME] Build de produção sem VITE_API_URL absoluta do backend — as fotos em /uploads não vão carregar. No Vercel, define VITE_API_URL (ex. https://teu-api.onrender.com/api) e faz redeploy.',
+    )
   }
-  try {
-    return new URL(base).origin
-  } catch {
-    return 'http://localhost:4000'
+  if (!base.startsWith('/')) {
+    try {
+      return stripTrailingSlashes(new URL(base).origin)
+    } catch {
+      return stripTrailingSlashes('http://localhost:4000')
+    }
   }
+
+  if (import.meta.env.DEV && typeof window !== 'undefined') {
+    return stripTrailingSlashes(window.location.origin)
+  }
+
+  if (import.meta.env.PROD && typeof window !== 'undefined') {
+    console.warn(
+      '[SME] Fotos /uploads: em produção defina VITE_API_URL como URL absoluta do backend (ex. https://teu-api.onrender.com/api) ou VITE_PUBLIC_FILES_ORIGIN (ex. https://teu-api.onrender.com). Com só `/api` relativo, as imagens não vêm do Vercel.',
+    )
+  }
+
+  return typeof window !== 'undefined' ? stripTrailingSlashes(window.location.origin) : ''
 }
 
 export const api = axios.create({
