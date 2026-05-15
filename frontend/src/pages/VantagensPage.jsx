@@ -250,6 +250,43 @@ export function VantagensPage() {
             <div className="grid items-start gap-4 md:grid-cols-2 lg:grid-cols-3">
               {cuponsResgatados.map((cupom) => (
                 <article key={cupom.id} className="surface-card flex flex-col gap-2">
+                  {vantagemTemFoto(cupom.vantagem?.foto) ? (
+                    <div
+                      className="-mx-1 -mt-1 mb-2 cursor-zoom-in overflow-hidden rounded-xl border border-slate-100 transition hover:ring-2 hover:ring-blue-200/80"
+                      role="button"
+                      tabIndex={0}
+                      onClick={() =>
+                        setFotoModal({
+                          url: resolvePublicFileUrl(cupom.vantagem.foto),
+                          titulo: cupom.vantagem?.titulo ?? 'Vantagem',
+                          vantagemId: cupom.vantagem?.id,
+                        })
+                      }
+                      onKeyDown={(e) => {
+                        if (e.key !== 'Enter' && e.key !== ' ') return
+                        e.preventDefault()
+                        setFotoModal({
+                          url: resolvePublicFileUrl(cupom.vantagem.foto),
+                          titulo: cupom.vantagem?.titulo ?? 'Vantagem',
+                          vantagemId: cupom.vantagem?.id,
+                        })
+                      }}
+                    >
+                      <img
+                        src={resolvePublicFileUrl(cupom.vantagem.foto)}
+                        alt=""
+                        className="pointer-events-none h-28 w-full object-cover sm:h-32"
+                        loading="lazy"
+                        referrerPolicy="no-referrer"
+                        onError={(e) => {
+                          console.error('[SME] Falha ao carregar foto do cupom', cupom.id, e.currentTarget.src)
+                        }}
+                      />
+                      <p className="border-t border-slate-100 bg-slate-50 px-2 py-1.5 text-center text-[11px] font-medium text-slate-600 sm:text-xs">
+                        Clique para ver a foto em tamanho maior
+                      </p>
+                    </div>
+                  ) : null}
                   <h3 className="font-semibold text-slate-900">{cupom.vantagem?.titulo ?? 'Vantagem'}</h3>
                   {cupom.vantagem?.descricao ? (
                     <p className="line-clamp-3 text-sm text-slate-500">{cupom.vantagem.descricao}</p>

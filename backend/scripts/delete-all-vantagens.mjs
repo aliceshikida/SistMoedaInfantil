@@ -3,6 +3,7 @@
  * e devolve ao saldo dos alunos as moedas gastas nesses resgates.
  * Remove ficheiros de foto em uploads/ referenciados pelas vantagens.
  */
+import "dotenv/config";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";

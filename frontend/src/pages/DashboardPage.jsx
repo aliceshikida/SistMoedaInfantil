@@ -1,8 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
 import { Layout } from '../components/Layout'
-import { api } from '../lib/api'
+import { api, resolvePublicFileUrl } from '../lib/api'
 import { useAuth } from '../providers/AuthProvider'
+
+function vantagemTemFoto(foto) {
+  return typeof foto === 'string' && foto.trim().length > 0
+}
 
 function StatCard({ label, value, hint, accent }) {
   const accents = {
@@ -248,8 +252,17 @@ export function DashboardPage() {
               <h3 className="mb-4 text-base font-semibold text-slate-900">Últimas trocas (cupons)</h3>
               <ul className="divide-y divide-slate-100">
                 {cupons.slice(0, 5).map((cupom) => (
-                  <li key={cupom.id} className="flex flex-wrap items-center justify-between gap-2 py-3 first:pt-0">
-                    <div>
+                  <li key={cupom.id} className="flex flex-wrap items-center gap-3 py-3 first:pt-0">
+                    {vantagemTemFoto(cupom.vantagem?.foto) ? (
+                      <img
+                        src={resolvePublicFileUrl(cupom.vantagem.foto)}
+                        alt=""
+                        className="h-14 w-14 shrink-0 rounded-lg border border-slate-100 object-cover"
+                        loading="lazy"
+                        referrerPolicy="no-referrer"
+                      />
+                    ) : null}
+                    <div className="min-w-0 flex-1">
                       <p className="font-semibold text-slate-900">{cupom.vantagem.titulo}</p>
                       <p className="text-xs text-slate-500">Código {cupom.codigo}</p>
                     </div>
@@ -263,8 +276,17 @@ export function DashboardPage() {
               <h3 className="mb-4 text-base font-semibold text-slate-900">Cupons resgatados</h3>
               <ul className="divide-y divide-slate-100">
                 {cupons.slice(0, 5).map((cupom) => (
-                  <li key={cupom.id} className="flex flex-wrap items-center justify-between gap-2 py-3 first:pt-0">
-                    <div>
+                  <li key={cupom.id} className="flex flex-wrap items-center gap-3 py-3 first:pt-0">
+                    {vantagemTemFoto(cupom.vantagem?.foto) ? (
+                      <img
+                        src={resolvePublicFileUrl(cupom.vantagem.foto)}
+                        alt=""
+                        className="h-14 w-14 shrink-0 rounded-lg border border-slate-100 object-cover"
+                        loading="lazy"
+                        referrerPolicy="no-referrer"
+                      />
+                    ) : null}
+                    <div className="min-w-0 flex-1">
                       <p className="font-semibold text-slate-900">{cupom.usuario.nome}</p>
                       <p className="text-xs text-slate-500">
                         {cupom.codigo} — {cupom.vantagem.titulo}
