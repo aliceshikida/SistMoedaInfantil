@@ -1,13 +1,26 @@
 /**
  * Apaga todas as vantagens, cupons associados, transações de RESGATE com vantagem
  * e devolve ao saldo dos alunos as moedas gastas nesses resgates.
- * Remove ficheiros de foto em uploads/ referenciados pelas vantagens.
+ * Remove ficheiros de foto em uploads/ referenciados pelas vantagens (só no disco local
+ * desta máquina; em produção o disco do servidor não é apagado por este script).
+ *
+ * Uso:
+ *   npm run prisma:wipe-vantagens
+ *   npm run prisma:wipe-vantagens -- "postgresql://user:pass@host/db?sslmode=require"
+ *
+ * O 1.º argumento força DATABASE_URL (ideal para apagar o que o Vercel mostra: a base do Render/Neon).
  */
 import "dotenv/config";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { PrismaClient } from "@prisma/client";
+
+const cliDatabaseUrl = process.argv[2]?.trim();
+if (cliDatabaseUrl) {
+  process.env.DATABASE_URL = cliDatabaseUrl;
+  console.warn("[SME] DATABASE_URL definida pelo 1.º argumento da linha de comandos (produção).");
+}
 
 function describeDbTarget() {
   const u = process.env.DATABASE_URL || "";
@@ -24,8 +37,10 @@ function describeDbTarget() {
 }
 
 console.warn(
-  `[SME] wipe-vantagens: a apagar dados em → ${describeDbTarget()}\n` +
-    "    Se no Vercel ainda vês vantagens, o site usa outra API/base: define DATABASE_URL da PRODUÇÃO neste terminal antes do comando (não sobrescreve variáveis já definidas).",
+  `[SME] wipe-vantagens: alvo → ${describeDbTarget()}\n` +
+    (cliDatabaseUrl
+      ? "    A usar a URL passada no comando."
+      : "    Para apagar na base que o site em produção usa: npm run prisma:wipe-vantagens -- \"postgresql://...\" (URL do painel Neon/Render), ou exporta DATABASE_URL no terminal antes de npm run."),
 );
 
 const prisma = new PrismaClient();

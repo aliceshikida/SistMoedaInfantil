@@ -238,7 +238,7 @@ Atualmente a execucao validada nesta maquina foi em modo local (sem Docker), com
 - Erro de login: rode novamente `npm run prisma:seed` no backend
 - Sem dados no sistema: confirme `npx prisma db push` + `npm run prisma:seed`
 - Erro de API no frontend: confira `VITE_API_URL` no `frontend/.env`
-- **Vercel mostra vantagens antigas após `wipe` local:** o deploy do frontend chama a API em produção (ex. `VITE_API_URL` nas variáveis de ambiente do Vercel). O script `npm run prisma:wipe-vantagens` só altera a base apontada pelo `DATABASE_URL` do teu PC (normalmente `file:./dev.db`). Para limpar a base real, corre o mesmo script com o `DATABASE_URL` de produção no ambiente (ex. Postgres da Neon/Render), ou apaga as linhas no painel da base de dados.
+- **Vercel mostra vantagens antigas após `wipe` local:** o frontend em produção lê a API noutro host; a base é a do **Postgres** (Neon, Supabase, Render, etc.), não o `dev.db` local. Para apagar de verdade: no painel do host copia `DATABASE_URL`, depois na pasta `backend` corre `npm run prisma:wipe-vantagens -- "postgresql://..."` (a string completa entre aspas). Alternativa: consola SQL do provedor e apagar linhas das tabelas `Vantagem` / `Cupom` / transações de resgate (cuidado com integridade).
 - Email falhando: em ambiente local, o envio de email nao bloqueia os fluxos principais
 
 ## Melhorias futuras sugeridas
