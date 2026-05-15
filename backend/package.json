@@ -10,6 +10,7 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "node prisma/seed.js",
     "prisma:wipe-vantagens": "node scripts/delete-all-vantagens.mjs",
+    "prisma:list-vantagens": "node scripts/print-vantagens.mjs",
     "lint": "eslint src prisma --ext .js",
     "format": "prettier --write ."
   },

@@ -1,7 +1,10 @@
 {
   "rewrites": [
     {
-      "source": "/(.*)",
+      "handle": "filesystem"
+    },
+    {
+      "source": "/((?!uploads|api).*)",
       "destination": "/index.html"
     }
   ]

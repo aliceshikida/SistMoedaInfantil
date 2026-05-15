@@ -221,6 +221,8 @@ npm run dev -- --host
 - `npm run start`
 - `npm run prisma:seed`
 - `npm run prisma:generate`
+- `npm run prisma:list-vantagens` — lista vantagens na base atual; use `npm run prisma:list-vantagens -- "postgresql://..."` para ver a base de **produção** (a mesma que o Vercel usa via API).
+- `npm run prisma:wipe-vantagens` — apaga todas as vantagens (e cupons) na base atual; com `-- "postgresql://..."` apaga na base remota.
 - `npm run lint`
 
 ### Frontend
@@ -238,7 +240,8 @@ Atualmente a execucao validada nesta maquina foi em modo local (sem Docker), com
 - Erro de login: rode novamente `npm run prisma:seed` no backend
 - Sem dados no sistema: confirme `npx prisma db push` + `npm run prisma:seed`
 - Erro de API no frontend: confira `VITE_API_URL` no `frontend/.env`
-- **Vercel mostra vantagens antigas após `wipe` local:** o frontend em produção lê a API noutro host; a base é a do **Postgres** (Neon, Supabase, Render, etc.), não o `dev.db` local. Para apagar de verdade: no painel do host copia `DATABASE_URL`, depois na pasta `backend` corre `npm run prisma:wipe-vantagens -- "postgresql://..."` (a string completa entre aspas). Alternativa: consola SQL do provedor e apagar linhas das tabelas `Vantagem` / `Cupom` / transações de resgate (cuidado com integridade).
+- **Fotos em `/uploads` no Vercel mostram tipo `html`:** o fallback SPA (`/(.*)` → `index.html`) capturava também `/uploads/...`. O `vercel.json` agora usa `handle: filesystem` e exclui caminhos que começam por `uploads` ou `api` desse fallback. As imagens **só carregam** se o build tiver `VITE_API_URL` (ou `VITE_PUBLIC_FILES_ORIGIN`) absolutos apontando para o **mesmo host** onde o Express serve `/uploads` — senão o pedido a `*.vercel.app/uploads/...` passa a ser **404** até configurares.
+- **Vercel mostra vantagens antigas após `wipe` local:** o frontend em produção lê a API noutro host; a base é a do **Postgres** (Neon, Supabase, Render, etc.), não o `dev.db` local. Confirma com `npm run prisma:list-vantagens -- "postgresql://..."` se o título (ex. clube do livro) está **nessa** base. Para apagar: `npm run prisma:wipe-vantagens -- "postgresql://..."` (string completa entre aspas). No site em produção, F12 → Rede → recarrega `/vantagens` e verifica o URL do `GET .../vantagens` (é o backend real). Alternativa: consola SQL do provedor.
 - Email falhando: em ambiente local, o envio de email nao bloqueia os fluxos principais
 
 ## Melhorias futuras sugeridas
