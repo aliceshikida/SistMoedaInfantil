@@ -8,6 +8,18 @@ import { CupomDAO } from "../dao/cupom.dao.js";
 import { createCouponCode } from "../utils/coupon.js";
 import { sendMail } from "./email.service.js";
 
+async function notifyAlunoRecebeuMoedas({ aluno, quantidade, mensagem, professor }) {
+  if (!aluno?.usuario?.email) return;
+  await sendMail({
+    to: aluno.usuario.email,
+    subject: "Você recebeu moedas",
+    title: "Novas moedas na sua conta",
+    body: `<p>Você recebeu <strong>${quantidade}</strong> moedas de <strong>${professor.usuario.nome}</strong>.</p>
+<p>Mensagem: ${mensagem}</p>
+<p>Seu novo saldo será atualizado assim que você acessar o app.</p>`,
+  });
+}
+
 export async function enviarMoedas({ professorUserId, alunoId, quantidade, mensagem }) {
   if (!mensagem?.trim()) throw { status: 400, message: "Mensagem é obrigatória." };
   if (!quantidade || Number.isNaN(quantidade) || quantidade <= 0) {
@@ -52,12 +64,7 @@ export async function enviarMoedas({ professorUserId, alunoId, quantidade, mensa
       },
       tx,
     );
-    await sendMail({
-      to: aluno.usuario.email,
-      subject: "Você recebeu moedas",
-      title: "Parabéns!",
-      body: `<p>Você recebeu <strong>${quantidade}</strong> moedas.</p><p>Mensagem: ${mensagem}</p>`,
-    });
+    await notifyAlunoRecebeuMoedas({ aluno, quantidade, mensagem, professor });
   });
 }
 

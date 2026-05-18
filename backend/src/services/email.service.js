@@ -22,13 +22,26 @@ export async function sendMail({ to, subject, title, body, linkQrCode }) {
   
   let finalBody = body;
 
+  // Preparar attachment CID para melhor compatibilidade (clientes que bloqueiam data URLs)
+  let attachments;
+  let qrCid;
   if (linkQrCode) {
     try {
       const qrCodeImageBase64 = await QRCode.toDataURL(linkQrCode);
+      const base64 = qrCodeImageBase64.split(",")[1];
+      const imgBuffer = Buffer.from(base64, "base64");
+      qrCid = `qrcode-${Date.now()}@sme`;
+      attachments = [
+        {
+          filename: "qrcode.png",
+          content: imgBuffer,
+          cid: qrCid,
+        },
+      ];
       finalBody += `
         <div style="margin-top: 24px; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 20px;">
           <p style="color: #475569; font-size: 14px; margin-bottom: 12px;"><strong>Acesse pelo celular:</strong> Escaneie o QR Code abaixo</p>
-          <img src="${qrCodeImageBase64}" alt="QR Code" style="width: 150px; height: 150px; border-radius: 8px; border: 1px solid #e2e8f0; padding: 4px; background: #fff;" />
+          <img src="cid:${qrCid}" alt="QR Code" style="width: 150px; height: 150px; border-radius: 8px; border: 1px solid #e2e8f0; padding: 4px; background: #fff;" />
         </div>
       `;
     } catch (err) {
@@ -42,6 +55,7 @@ export async function sendMail({ to, subject, title, body, linkQrCode }) {
       to,
       subject,
       html: htmlTemplate(title, finalBody),
+      attachments,
     });
   } catch (error) {
     console.warn("Email não enviado no ambiente local:", error.message);
