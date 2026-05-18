@@ -111,23 +111,6 @@ Copie:
 - `backend/.env.example` -> `backend/.env`
 - `frontend/.env.example` -> `frontend/.env`
 
-### Backend (`backend/.env`)
-
-```env
-PORT=4000
-NODE_ENV=development
-DATABASE_URL="file:./dev.db"
-JWT_SECRET=super_secret_jwt
-JWT_EXPIRES_IN=1d
-SMTP_HOST=smtp.ethereal.email
-SMTP_PORT=587
-# É necessário entrar no ethereal, gerar as credenciais e altera-las abaixo para vizualizar os emails
-SMTP_USER=user
-SMTP_PASS=pass
-SMTP_FROM="Sistema de Moeda Estudantil <noreply@sme.local>"
-FRONTEND_URL=http://localhost:5173
-```
-
 ### Frontend (`frontend/.env`)
 
 ```env
@@ -234,19 +217,3 @@ npm run dev -- --host
 
 O arquivo `docker-compose.yml` esta no projeto.
 Atualmente a execucao validada nesta maquina foi em modo local (sem Docker), com banco SQLite.
-
-## Troubleshooting
-
-- Erro de login: rode novamente `npm run prisma:seed` no backend
-- Sem dados no sistema: confirme `npx prisma db push` + `npm run prisma:seed`
-- Erro de API no frontend: confira `VITE_API_URL` no `frontend/.env`
-- **Fotos em `/uploads` no Vercel mostram tipo `html`:** o fallback SPA (`/(.*)` → `index.html`) capturava também `/uploads/...`. O `vercel.json` agora usa `handle: filesystem` e exclui caminhos que começam por `uploads` ou `api` desse fallback. As imagens **só carregam** se o build tiver `VITE_API_URL` (ou `VITE_PUBLIC_FILES_ORIGIN`) absolutos apontando para o **mesmo host** onde o Express serve `/uploads` — senão o pedido a `*.vercel.app/uploads/...` passa a ser **404** até configurares.
-- **Vercel mostra vantagens antigas após `wipe` local:** o frontend em produção lê a API noutro host; a base é a do **Postgres** (Neon, Supabase, Render, etc.), não o `dev.db` local. Confirma com `npm run prisma:list-vantagens -- "postgresql://..."` se o título (ex. clube do livro) está **nessa** base. Para apagar: `npm run prisma:wipe-vantagens -- "postgresql://..."` (string completa entre aspas). No site em produção, F12 → Rede → recarrega `/vantagens` e verifica o URL do `GET .../vantagens` (é o backend real). Alternativa: consola SQL do provedor.
-- Email falhando: em ambiente local, o envio de email nao bloqueia os fluxos principais
-
-## Melhorias futuras sugeridas
-
-- Migrar novamente para PostgreSQL em producao
-- Testes automatizados (unit e integracao)
-- Painel admin completo com CRUDs e bloqueio de usuarios
-- Paginacao/filtros avancados em todas as listagens
