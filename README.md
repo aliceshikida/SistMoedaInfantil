@@ -6,7 +6,7 @@ O sistema controla transacoes, extrato, cupons e dashboards por perfil.
 
 ## Visao geral
 
-- Perfis de acesso: `ALUNO`, `PROFESSOR`, `EMPRESA`, `ADMIN`
+- Perfis de acesso: `ALUNO`, `PROFESSOR`, `EMPRESA`
 - Autenticacao: JWT com middleware de autenticacao e autorizacao por perfil
 - Camadas: Controllers -> Services -> Prisma
 - Persistencia: Prisma ORM (execucao local atualmente com SQLite para facilitar setup)
