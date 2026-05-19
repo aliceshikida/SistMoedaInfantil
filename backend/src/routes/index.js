@@ -21,10 +21,12 @@ import {
 } from "../controllers/core.controller.js";
 import { authenticate, authorize } from "../middlewares/auth.middleware.js";
 import { upload } from "../middlewares/upload.middleware.js";
+import { cupomQrHandler } from "../controllers/qr.controller.js";
 
 const router = Router();
 
 router.get("/health", (_req, res) => res.json({ ok: true }));
+router.get("/public/cupom/:codigo/qr.png", cupomQrHandler);
 router.get("/instituicoes", listInstituicoes);
 router.get("/vantagens", listVantagens);
 

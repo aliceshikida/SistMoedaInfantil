@@ -11,6 +11,8 @@
     "prisma:seed": "node prisma/seed.js",
     "prisma:wipe-vantagens": "node scripts/delete-all-vantagens.mjs",
     "prisma:list-vantagens": "node scripts/print-vantagens.mjs",
+    "email:test": "node scripts/send-test-email.mjs",
+    "email:test:qr": "node scripts/send-test-email.mjs qr",
     "lint": "eslint src prisma --ext .js",
     "format": "prettier --write ."
   },

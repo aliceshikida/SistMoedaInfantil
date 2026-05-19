@@ -6,17 +6,20 @@ import { VantagemDAO } from "../dao/vantagem.dao.js";
 import { TransacaoDAO } from "../dao/transacao.dao.js";
 import { CupomDAO } from "../dao/cupom.dao.js";
 import { createCouponCode } from "../utils/coupon.js";
-import { sendMail } from "./email.service.js";
+import { sendMail, sendMailWithQrCode } from "./email.service.js";
+import { env } from "../config/env.js";
 
 async function notifyAlunoRecebeuMoedas({ aluno, quantidade, mensagem, professor }) {
   if (!aluno?.usuario?.email) return;
+  const appUrl = env.frontendUrl || "http://localhost:5173";
   await sendMail({
     to: aluno.usuario.email,
     subject: "Você recebeu moedas",
     title: "Novas moedas na sua conta",
-    body: `<p>Você recebeu <strong>${quantidade}</strong> moedas de <strong>${professor.usuario.nome}</strong>.</p>
-<p>Mensagem: ${mensagem}</p>
-<p>Seu novo saldo será atualizado assim que você acessar o app.</p>`,
+    body: `<p>Olá, <strong>${aluno.usuario.nome}</strong>,</p>
+<p>Você recebeu <strong>${quantidade}</strong> moeda(s) de <strong>${professor.usuario.nome}</strong>.</p>
+<p><strong>Mensagem do professor:</strong> ${mensagem}</p>
+<p>Acesse o sistema para ver seu saldo e extrato: <a href="${appUrl}">${appUrl}</a></p>`,
   });
 }
 
@@ -33,7 +36,7 @@ export async function enviarMoedas({ professorUserId, alunoId, quantidade, mensa
   if (professor.saldoMoedas < quantidade) throw { status: 400, message: "Saldo insuficiente." };
   const aluno = await AlunoDAO.findById(alunoId, { usuario: true, instituicao: true });
   if (!aluno) throw { status: 404, message: "Aluno não encontrado." };
-  return prisma.$transaction(async (tx) => {
+  await prisma.$transaction(async (tx) => {
     await tx.professor.update({
       where: { id: professor.id },
       data: { saldoMoedas: { decrement: quantidade } },
@@ -64,8 +67,13 @@ export async function enviarMoedas({ professorUserId, alunoId, quantidade, mensa
       },
       tx,
     );
-    await notifyAlunoRecebeuMoedas({ aluno, quantidade, mensagem, professor });
   });
+
+  try {
+    await notifyAlunoRecebeuMoedas({ aluno, quantidade, mensagem, professor });
+  } catch (err) {
+    console.error("Moedas enviadas, mas o email ao aluno falhou:", err.message);
+  }
 }
 
 function cupomCodigoHtml(codigo) {
@@ -132,9 +140,10 @@ export async function resgatarVantagem({ alunoUserId, vantagemId }) {
   const codigoBloco = cupomCodigoHtml(cupom.codigo);
   const nomeAluno = aluno.usuario.nome;
   
-  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+  const apiBase = env.apiPublicUrl.replace(/\/$/, "");
+  const qrImageUrl = `${apiBase}/api/public/cupom/${encodeURIComponent(cupom.codigo)}/qr.png`;
 
-  await sendMail({
+  await sendMailWithQrCode({
     to: aluno.usuario.email,
     subject: "Seu cupom — troca presencial",
     title: "Cupom para troca presencial",
@@ -143,12 +152,13 @@ export async function resgatarVantagem({ alunoUserId, vantagemId }) {
 <p>Use o código abaixo na <strong>troca presencial</strong> (apresente na hora da retirada ou validação):</p>
 ${codigoBloco}
 <p style="font-size:13px;color:#64748b">Guarde este e-mail ou anote o código. Ele é o mesmo informado à escola para conferência.</p>`,
-    linkQrCode: `${frontendUrl}/vantagem/${vantagem.id}`
+    qrContent: cupom.codigo,
+    publicQrImageUrl: qrImageUrl,
   });
 
   const professores = await listProfessoresQueEnviaramMoedasAluno(aluno.usuarioId);
   for (const prof of professores) {
-    await sendMail({
+    await sendMailWithQrCode({
       to: prof.email,
       subject: `Cupom de resgate — ${cupom.codigo}`,
       title: "Cupom do aluno (troca presencial)",
@@ -157,6 +167,8 @@ ${codigoBloco}
 <p>O código do cupom para validação na troca presencial é o <strong>mesmo</strong> enviado ao aluno:</p>
 ${codigoBloco}
 <p style="font-size:13px;color:#64748b">Empresa parceira: ${vantagem.empresa.usuario.nome}.</p>`,
+      qrContent: cupom.codigo,
+      publicQrImageUrl: qrImageUrl,
     });
   }
 
