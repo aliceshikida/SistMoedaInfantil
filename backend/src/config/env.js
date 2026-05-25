@@ -20,4 +20,8 @@ export const env = {
     pass: process.env.SMTP_PASS,
     from: process.env.SMTP_FROM || "noreply@sme.local",
   },
+  rabbitmq: {
+    url: process.env.RABBITMQ_URL || "",
+    emailQueue: process.env.RABBITMQ_EMAIL_QUEUE || "sme.email",
+  },
 };

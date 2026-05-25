@@ -6,13 +6,13 @@ import { VantagemDAO } from "../dao/vantagem.dao.js";
 import { TransacaoDAO } from "../dao/transacao.dao.js";
 import { CupomDAO } from "../dao/cupom.dao.js";
 import { createCouponCode } from "../utils/coupon.js";
-import { sendMail, sendMailWithQrCode } from "./email.service.js";
+import { enqueueMail, enqueueMailWithQrCode } from "./notification.service.js";
 import { env } from "../config/env.js";
 
 async function notifyAlunoRecebeuMoedas({ aluno, quantidade, mensagem, professor }) {
   if (!aluno?.usuario?.email) return;
   const appUrl = env.frontendUrl || "http://localhost:5173";
-  await sendMail({
+  await enqueueMail({
     to: aluno.usuario.email,
     subject: "Você recebeu moedas",
     title: "Novas moedas na sua conta",
@@ -72,7 +72,7 @@ export async function enviarMoedas({ professorUserId, alunoId, quantidade, mensa
   try {
     await notifyAlunoRecebeuMoedas({ aluno, quantidade, mensagem, professor });
   } catch (err) {
-    console.error("Moedas enviadas, mas o email ao aluno falhou:", err.message);
+    console.error("Moedas enviadas, mas falha ao enfileirar e-mail ao aluno:", err.message);
   }
 }
 
@@ -143,7 +143,7 @@ export async function resgatarVantagem({ alunoUserId, vantagemId }) {
   const apiBase = env.apiPublicUrl.replace(/\/$/, "");
   const qrImageUrl = `${apiBase}/api/public/cupom/${encodeURIComponent(cupom.codigo)}/qr.png`;
 
-  await sendMailWithQrCode({
+  await enqueueMailWithQrCode({
     to: aluno.usuario.email,
     subject: "Seu cupom — troca presencial",
     title: "Cupom para troca presencial",
@@ -158,7 +158,7 @@ ${codigoBloco}
 
   const professores = await listProfessoresQueEnviaramMoedasAluno(aluno.usuarioId);
   for (const prof of professores) {
-    await sendMailWithQrCode({
+    await enqueueMailWithQrCode({
       to: prof.email,
       subject: `Cupom de resgate — ${cupom.codigo}`,
       title: "Cupom do aluno (troca presencial)",
@@ -172,7 +172,7 @@ ${codigoBloco}
     });
   }
 
-  await sendMail({
+  await enqueueMail({
     to: vantagem.empresa.usuario.email,
     subject: "Novo resgate em sua vantagem",
     title: "Um aluno resgatou sua vantagem",

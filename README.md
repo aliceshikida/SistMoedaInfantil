@@ -30,6 +30,7 @@ O sistema controla transacoes, extrato, cupons e dashboards por perfil.
 - bcryptjs
 - Multer (upload de imagem)
 - Nodemailer (emails)
+- RabbitMQ (fila assíncrona de e-mails)
 - Swagger (documentacao da API)
 
 ## Arquitetura de pastas
@@ -45,6 +46,7 @@ O sistema controla transacoes, extrato, cupons e dashboards por perfil.
 │       ├── controllers
 │       ├── middlewares
 │       ├── prisma
+│       ├── queue
 │       ├── routes
 │       ├── services
 │       └── utils
@@ -111,6 +113,17 @@ Copie:
 - `backend/.env.example` -> `backend/.env`
 - `frontend/.env.example` -> `frontend/.env`
 
+### Backend (`backend/.env`)
+
+Além de `PORT`, `DATABASE_URL`, `JWT_SECRET` e SMTP, para fila de e-mails:
+
+```env
+RABBITMQ_URL=amqp://guest:guest@localhost:5672
+RABBITMQ_EMAIL_QUEUE=sme.email
+```
+
+Sem `RABBITMQ_URL`, os e-mails continuam sendo enviados de forma **síncrona** (comportamento anterior).
+
 ### Frontend (`frontend/.env`)
 
 ```env
@@ -118,6 +131,27 @@ VITE_API_URL=http://localhost:4000/api
 ```
 
 ## Como rodar localmente (recomendado)
+
+### RabbitMQ (opcional, recomendado para e-mails em background)
+
+```bash
+docker compose up -d rabbitmq
+```
+
+Painel de administração: [http://localhost:15672](http://localhost:15672) (usuário/senha: `guest` / `guest`).
+
+No `backend/.env`, configure:
+
+```env
+RABBITMQ_URL=amqp://guest:guest@localhost:5672
+```
+
+Em outro terminal, inicie o **worker** que consome a fila e envia os e-mails:
+
+```bash
+cd backend
+npm run worker:email
+```
 
 ### Backend
 
@@ -145,6 +179,7 @@ npm run dev -- --host
 - API: [http://localhost:4000/api](http://localhost:4000/api)
 - Health: [http://localhost:4000/api/health](http://localhost:4000/api/health)
 - Swagger: [http://localhost:4000/docs](http://localhost:4000/docs)
+- RabbitMQ Management: [http://localhost:15672](http://localhost:15672)
 
 ## Credenciais seed
 
@@ -202,6 +237,7 @@ npm run dev -- --host
 ### Backend
 - `npm run dev`
 - `npm run start`
+- `npm run worker:email` — consome a fila RabbitMQ e envia e-mails
 - `npm run prisma:seed`
 - `npm run prisma:generate`
 - `npm run prisma:list-vantagens` — lista vantagens na base atual; use `npm run prisma:list-vantagens -- "postgresql://..."` para ver a base de **produção** (a mesma que o Vercel usa via API).
@@ -215,5 +251,41 @@ npm run dev -- --host
 
 ## Docker
 
-O arquivo `docker-compose.yml` esta no projeto.
-Atualmente a execucao validada nesta maquina foi em modo local (sem Docker), com banco SQLite.
+O arquivo `docker-compose.yml` inclui PostgreSQL, RabbitMQ, backend, **worker de e-mail** e frontend.
+
+Subir apenas o RabbitMQ (desenvolvimento local com SQLite):
+
+```bash
+docker compose up -d rabbitmq
+```
+
+Subir a stack completa:
+
+```bash
+docker compose up -d
+```
+
+Serviços:
+
+| Serviço | Porta | Descrição |
+|---------|-------|-----------|
+| `rabbitmq` | 5672 / 15672 | Broker de mensagens + painel web |
+| `email-worker` | — | Processa fila `sme.email` e envia SMTP |
+| `backend` | 4000 | API Express |
+| `frontend` | 5173 | App React |
+
+### Fila de e-mails (RabbitMQ)
+
+Cadastros, envio de moedas e resgates de vantagem **publicam jobs** na fila `sme.email`. O worker (`npm run worker:email` ou serviço `email-worker` no Docker) consome e chama o Nodemailer.
+
+Fluxo:
+
+```text
+API → publica job na fila → responde ao cliente
+                ↓
+         worker consome → SMTP (Gmail, etc.)
+```
+
+Se o RabbitMQ estiver indisponível, a API faz **fallback síncrono** e envia o e-mail direto (com aviso no log).
+
+Para execução local sem Docker, o banco SQLite continua válido; o RabbitMQ é opcional via container.

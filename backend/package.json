@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
+    "worker:email": "node src/worker.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "node prisma/seed.js",
@@ -22,6 +23,7 @@
   "description": "API do Sistema de Moeda Estudantil",
   "dependencies": {
     "@prisma/client": "^6.19.3",
+    "amqplib": "^2.0.1",
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",

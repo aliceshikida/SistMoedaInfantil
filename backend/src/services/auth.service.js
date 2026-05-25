@@ -3,9 +3,9 @@ import { Role, StatusUsuario } from "@prisma/client";
 import { AlunoDAO } from "../dao/aluno.dao.js";
 import { EmpresaDAO } from "../dao/empresa.dao.js";
 import { UsuarioDAO } from "../dao/usuario.dao.js";
-import { cpfHasElevenDigits, isValidCnpj, onlyDigits } from "../utils/docValidator.js";
+import { cpfHasElevenDigits, isValidCnpj, isValidCpf, onlyDigits } from "../utils/docValidator.js";
 import { signToken } from "../utils/token.js";
-import { sendMail } from "./email.service.js";
+import { enqueueMail } from "./notification.service.js";
 import { creditSemesterCoinsIfNeeded } from "./professor.service.js";
 
 function authResponse(user) {
@@ -29,7 +29,7 @@ export async function registerEmpresa(data) {
     empresa: { create: { cnpj: onlyDigits(cnpj), descricao } },
   });
   
-  await sendMail({
+  await enqueueMail({
     to: email,
     subject: "Cadastro de empresa realizado",
     title: `Bem-vinda, ${nome}`,
@@ -75,7 +75,7 @@ export async function registerAluno(data) {
     },
   });
   
-  await sendMail({
+  await enqueueMail({
     to: email,
     subject: "Bem-vindo ao Sistema de Moeda Estudantil",
     title: `Olá, ${nome}!`,
