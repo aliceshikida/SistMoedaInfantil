@@ -4,6 +4,8 @@ import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { z } from 'zod'
+import { AuthBrand } from '../components/AuthBrand.jsx'
+import { AuthShell } from '../components/AuthShell.jsx'
 import { useAuth } from '../providers/AuthProvider'
 
 const schema = z
@@ -20,20 +22,6 @@ const schema = z
     path: ['confirmacaoSenha'],
   })
 
-function GradCapIcon({ className }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-      <path
-        d="M4 10 12 6l8 4-8 4-8-4Z"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinejoin="round"
-      />
-      <path d="M8 12v3.5c0 1.5 2.2 2.5 4 2.5s4-1 4-2.5V12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-    </svg>
-  )
-}
-
 export function RegisterEmpresaPage() {
   const navigate = useNavigate()
   const { registerEmpresa } = useAuth()
@@ -41,16 +29,14 @@ export function RegisterEmpresaPage() {
   const { register, handleSubmit, formState } = useForm({ resolver: zodResolver(schema) })
 
   return (
-    <main className="auth-shell py-10">
-      <div className="auth-brand">
-        <div className="auth-brand-icon text-blue-600">
-          <GradCapIcon className="h-9 w-9" />
-        </div>
-        <h1 className="text-2xl font-bold text-white md:text-3xl">Cadastro de empresa</h1>
-        <p className="mt-2 max-w-md text-sm font-medium text-white/90">Parceiros que oferecem vantagens aos alunos.</p>
-      </div>
+    <AuthShell className="py-10">
+      <AuthBrand
+        title="Cadastro de empresa"
+        subtitle="Parceiros que oferecem vantagens aos alunos da escola."
+        badge="Empresa parceira"
+      />
 
-      <div className="auth-card max-w-xl">
+      <div className="auth-card w-full max-w-xl">
         <div className="mb-4">
           <button type="button" onClick={() => navigate('/login')} className="btn-secondary text-sm">
             Voltar ao login
@@ -94,6 +80,6 @@ export function RegisterEmpresaPage() {
           </button>
         </form>
       </div>
-    </main>
+    </AuthShell>
   )
 }

@@ -1,13 +1,16 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  /* Fundo geral: azul bem claro (contrasta com a sidebar escura em azul profundo) */
-  --color-app-bg: #d4e4f7;
-  --color-app-bg-deep: #c4d9f0;
-  --color-brand-600: #2563eb;
-  --color-brand-500: #3b82f6;
-  --color-brand-700: #1d4ed8;
+  --font-sans: "Segoe UI", ui-sans-serif, system-ui, Roboto, "Helvetica Neue", Arial, sans-serif;
+  --color-app-bg: #e8f0fa;
+  --color-app-bg-deep: #dce8f5;
+  --color-school-navy: #1a365d;
+  --color-school-navy-deep: #0f2744;
+  --color-school-gold: #f5b942;
+  --color-school-gold-dark: #d97706;
+  --color-brand-600: #1e4a7a;
+  --color-brand-500: #2d6aab;
+  --color-brand-700: #1a365d;
 }
 
 @layer base {
@@ -48,9 +51,68 @@
   /* Área auth: rola quando precisa; barra de scroll fica invisível (touch/rato continuam a funcionar) */
   .auth-shell {
     @apply relative flex min-h-dvh flex-col items-center justify-center overflow-x-hidden overflow-y-auto px-4 py-10;
-    background: linear-gradient(145deg, #0b6bcb 0%, #0056b3 45%, #003d82 100%);
+    background-color: var(--color-school-navy-deep);
+    background-image:
+      radial-gradient(ellipse 90% 60% at 50% -10%, rgba(245, 185, 66, 0.22) 0%, transparent 55%),
+      radial-gradient(ellipse 70% 50% at 100% 50%, rgba(59, 130, 246, 0.12) 0%, transparent 50%),
+      radial-gradient(ellipse 60% 40% at 0% 80%, rgba(34, 197, 94, 0.08) 0%, transparent 45%),
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 31px,
+        rgba(255, 255, 255, 0.03) 31px,
+        rgba(255, 255, 255, 0.03) 32px
+      ),
+      linear-gradient(168deg, #0f2744 0%, #1a365d 38%, #1e4a7a 72%, #152a4a 100%);
     scrollbar-width: none;
     -ms-overflow-style: none;
+  }
+
+  .auth-shell-inner {
+    @apply relative z-10 flex w-full max-w-lg flex-col items-center;
+  }
+
+  .auth-school-backdrop {
+    @apply pointer-events-none absolute inset-0 overflow-hidden text-white;
+  }
+
+  .auth-school-building {
+    @apply absolute bottom-0 left-1/2 w-[140%] max-w-none -translate-x-1/2;
+    color: #fff;
+  }
+
+  .auth-float {
+    @apply absolute rounded-full opacity-20;
+    background: var(--color-school-gold);
+  }
+
+  .auth-float--book {
+    top: 12%;
+    left: 8%;
+    width: 3.5rem;
+    height: 2.5rem;
+    border-radius: 4px;
+    transform: rotate(-12deg);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.15);
+    opacity: 0.12;
+  }
+
+  .auth-float--coin {
+    top: 18%;
+    right: 10%;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 9999px;
+    opacity: 0.18;
+  }
+
+  .auth-float--star {
+    bottom: 28%;
+    right: 14%;
+    width: 1.25rem;
+    height: 1.25rem;
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+    opacity: 0.25;
   }
 
   .auth-shell::-webkit-scrollbar {
@@ -84,12 +146,28 @@
     @apply mb-8 flex flex-col items-center text-center;
   }
 
+  .auth-brand-logo-wrap {
+    @apply mb-3 flex items-center justify-center rounded-2xl bg-white/10 p-3 shadow-lg ring-2 ring-amber-300/40 backdrop-blur-sm;
+  }
+
+  .auth-brand-badge {
+    @apply mb-2 rounded-full border border-amber-300/35 bg-amber-400/15 px-3 py-1 text-[0.65rem] font-bold uppercase tracking-[0.14em] text-amber-100;
+  }
+
+  .auth-brand-title {
+    @apply text-2xl font-extrabold tracking-tight text-white drop-shadow-md md:text-3xl;
+  }
+
+  .auth-brand-subtitle {
+    @apply mt-2 max-w-md text-sm font-medium leading-relaxed text-blue-100/95;
+  }
+
   .auth-brand-icon {
     @apply mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-md;
   }
 
   .auth-card {
-    @apply w-full max-w-md rounded-[28px] bg-white p-8 shadow-xl shadow-slate-900/15;
+    @apply w-full max-w-md rounded-[28px] border border-white/20 bg-white/98 p-8 shadow-2xl shadow-slate-950/25 backdrop-blur-sm;
   }
 
   .auth-tabs {
@@ -101,7 +179,7 @@
   }
 
   .auth-tab-active {
-    background: linear-gradient(90deg, #1d4ed8 0%, #3b82f6 100%);
+    background: linear-gradient(90deg, var(--color-school-navy) 0%, #2d6aab 55%, var(--color-school-gold-dark) 100%);
     @apply text-white shadow-sm;
   }
 
@@ -118,8 +196,8 @@
   }
 
   .btn-primary {
-    background: linear-gradient(90deg, #1d4ed8 0%, #3b82f6 100%);
-    @apply rounded-full px-4 py-3 text-center text-sm font-semibold text-white shadow-md transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 focus-visible:ring-offset-2 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60;
+    background: linear-gradient(95deg, var(--color-school-navy) 0%, #2d6aab 50%, var(--color-school-gold-dark) 100%);
+    @apply rounded-full px-4 py-3 text-center text-sm font-semibold text-white shadow-md transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/60 focus-visible:ring-offset-2 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60;
   }
 
   .btn-secondary {
@@ -136,7 +214,11 @@
 
   .app-shell {
     min-height: 100vh;
-    background: linear-gradient(160deg, var(--color-app-bg) 0%, var(--color-app-bg-deep) 42%, #b8cef0 100%);
+    background: linear-gradient(165deg, var(--color-app-bg) 0%, var(--color-app-bg-deep) 45%, #cdd9ed 100%);
+  }
+
+  .app-logo-wrap {
+    @apply flex shrink-0 items-center justify-center rounded-xl bg-white/15 shadow-inner ring-1 ring-amber-300/25;
   }
 
   .sidebar-nav-link {

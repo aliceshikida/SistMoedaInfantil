@@ -1,20 +1,6 @@
 import { Link, NavLink, useNavigate } from 'react-router-dom'
+import { SmeLogo } from './SmeLogo.jsx'
 import { useAuth } from '../providers/AuthProvider'
-
-function GradCapIcon({ className }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-      <path
-        d="M12 3L2 8l10 5 8-4v8"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path d="M6 10.5V15c0 1.5 2.5 3 6 3s6-1.5 6-3v-4.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
-    </svg>
-  )
-}
 
 function navClass({ isActive }) {
   return [isActive ? 'sidebar-nav-link sidebar-nav-link-active' : 'sidebar-nav-link'].join(' ')
@@ -29,12 +15,12 @@ export function Layout({ title, subtitle, children }) {
       <div className="min-h-screen bg-app-bg">
         <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-white px-5 py-4 shadow-sm">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm">
-              <GradCapIcon className="h-5 w-5" />
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#1a365d] p-1 shadow-sm ring-1 ring-amber-300/35">
+              <SmeLogo size="sm" showRing={false} />
             </div>
             <div>
               <p className="text-sm font-bold text-slate-900">Moeda Estudantil</p>
-              <p className="text-xs text-slate-500">Gestão e reconhecimento</p>
+              <p className="text-xs text-slate-500">Reconhecimento escolar</p>
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -57,14 +43,14 @@ export function Layout({ title, subtitle, children }) {
 
   return (
     <div className="app-shell flex min-h-screen flex-col md:flex-row">
-      <aside className="flex min-h-0 shrink-0 flex-col border-b border-blue-800/80 bg-gradient-to-b from-blue-900 via-blue-900 to-blue-950 text-white md:min-h-screen md:w-60 md:border-b-0 md:border-r md:border-blue-800/60">
+      <aside className="flex min-h-0 shrink-0 flex-col border-b border-amber-500/20 bg-gradient-to-b from-[#1a365d] via-[#1e3a5f] to-[#0f2744] text-white md:min-h-screen md:w-60 md:border-b-0 md:border-r md:border-amber-500/15">
         <div className="flex items-center gap-3 px-5 py-6">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/15 text-white shadow-inner ring-1 ring-white/20">
-            <GradCapIcon className="h-6 w-6" />
+          <div className="app-logo-wrap h-12 w-12 p-1">
+            <SmeLogo size="sm" showRing={false} />
           </div>
           <div className="min-w-0">
             <p className="truncate text-sm font-bold text-white">Moeda Estudantil</p>
-            <p className="text-xs text-blue-200">Gestão e reconhecimento</p>
+            <p className="text-xs text-amber-200/90">Reconhecimento escolar</p>
           </div>
         </div>
 

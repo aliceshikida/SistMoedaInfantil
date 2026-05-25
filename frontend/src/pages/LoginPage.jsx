@@ -4,26 +4,14 @@ import { useForm } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { z } from 'zod'
+import { AuthBrand } from '../components/AuthBrand.jsx'
+import { AuthShell } from '../components/AuthShell.jsx'
 import { useAuth } from '../providers/AuthProvider'
 
 const schema = z.object({
   email: z.string().min(3, 'Informe seu email'),
   senha: z.string().min(8, 'Senha mínima de 8 caracteres'),
 })
-
-function GradCapIcon({ className }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-      <path
-        d="M4 10 12 6l8 4-8 4-8-4Z"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinejoin="round"
-      />
-      <path d="M8 12v3.5c0 1.5 2.2 2.5 4 2.5s4-1 4-2.5V12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-    </svg>
-  )
-}
 
 function EyeIcon({ className }) {
   return (
@@ -68,16 +56,11 @@ export function LoginPage() {
     panelAnim === 'from-right' ? 'auth-tab-panel--from-right' : panelAnim === 'from-left' ? 'auth-tab-panel--from-left' : ''
 
   return (
-    <main className="auth-shell">
-      <div className="auth-brand">
-        <div className="auth-brand-icon text-blue-600">
-          <GradCapIcon className="h-9 w-9" />
-        </div>
-        <h1 className="text-2xl font-bold text-white drop-shadow-sm md:text-3xl">Sistema de Moeda Estudantil</h1>
-        <p className="mt-2 max-w-md text-sm font-medium text-white/90">
-          Plataforma de reconhecimento acadêmico, saldo em moedas e trocas por vantagens.
-        </p>
-      </div>
+    <AuthShell>
+      <AuthBrand
+        title="Moeda Estudantil"
+        subtitle="Reconhecimento na escola, moedas virtuais e vantagens para quem se dedica aos estudos."
+      />
 
       <div className="auth-card">
         <div className="auth-tabs">
@@ -162,7 +145,7 @@ export function LoginPage() {
 
             <p className="mt-6 text-center text-sm text-slate-600">
               Não tem uma conta?{' '}
-              <button type="button" className="font-semibold text-blue-600 hover:underline" onClick={goCadastrar}>
+              <button type="button" className="font-semibold text-[#1a365d] hover:underline" onClick={goCadastrar}>
                 Cadastre-se
               </button>
             </p>
@@ -180,7 +163,7 @@ export function LoginPage() {
             </div>
             <p className="mt-6 text-center text-sm text-slate-600">
               Já tem conta?{' '}
-              <button type="button" className="font-semibold text-blue-600 hover:underline" onClick={goLogin}>
+              <button type="button" className="font-semibold text-[#1a365d] hover:underline" onClick={goLogin}>
                 Fazer login
               </button>
             </p>
@@ -189,7 +172,7 @@ export function LoginPage() {
         </div>
       </div>
 
-      <p className="mt-10 text-center text-xs text-white/75">© {new Date().getFullYear()} Sistema de Moeda Estudantil</p>
-    </main>
+      <p className="mt-10 text-center text-xs text-blue-100/80">© {new Date().getFullYear()} Moeda Estudantil</p>
+    </AuthShell>
   )
 }
