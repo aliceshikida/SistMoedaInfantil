@@ -12,7 +12,6 @@ O sistema controla transacoes, extrato, cupons e dashboards por perfil.
 - Persistencia: Prisma ORM (execucao local atualmente com SQLite para facilitar setup)
 - Front-end dark-first e responsivo
 
-## Stack utilizada
 
 ### Front-end
 - React + Vite
@@ -289,3 +288,7 @@ API → publica job na fila → responde ao cliente
 Se o RabbitMQ estiver indisponível, a API faz **fallback síncrono** e envia o e-mail direto (com aviso no log).
 
 Para execução local sem Docker, o banco SQLite continua válido; o RabbitMQ é opcional via container.
+
+---
+
+Repositório mantido por [Alice Shikida](https://github.com/aliceshikida).
