@@ -2,6 +2,7 @@ import { z } from "zod";
 import { UsuarioDAO } from "../dao/usuario.dao.js";
 import { onlyDigits } from "../utils/docValidator.js";
 import { login, registerAluno, registerEmpresa } from "../services/auth.service.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 
 const alunoSchema = z.object({
   nome: z.string().min(3),
@@ -26,45 +27,29 @@ const empresaSchema = z.object({
 
 const loginSchema = z.object({ email: z.string().min(3), senha: z.string().min(8) });
 
-export async function registerAlunoHandler(req, res, next) {
-  try {
-    const data = alunoSchema.parse(req.body);
-    const result = await registerAluno(data);
-    res.status(201).json(result);
-  } catch (error) {
-    next(error);
-  }
-}
+export const registerAlunoHandler = asyncHandler(async (req, res) => {
+  const data = alunoSchema.parse(req.body);
+  const result = await registerAluno(data);
+  res.status(201).json(result);
+});
 
-export async function registerEmpresaHandler(req, res, next) {
-  try {
-    const data = empresaSchema.parse(req.body);
-    const result = await registerEmpresa(data);
-    res.status(201).json(result);
-  } catch (error) {
-    next(error);
-  }
-}
+export const registerEmpresaHandler = asyncHandler(async (req, res) => {
+  const data = empresaSchema.parse(req.body);
+  const result = await registerEmpresa(data);
+  res.status(201).json(result);
+});
 
-export async function loginHandler(req, res, next) {
-  try {
-    const data = loginSchema.parse(req.body);
-    const result = await login(data);
-    res.json(result);
-  } catch (error) {
-    next(error);
-  }
-}
+export const loginHandler = asyncHandler(async (req, res) => {
+  const data = loginSchema.parse(req.body);
+  const result = await login(data);
+  res.json(result);
+});
 
-export async function meHandler(req, res, next) {
-  try {
-    const user = await UsuarioDAO.findById(req.user.id, {
-      aluno: true,
-      professor: true,
-      empresa: true,
-    });
-    res.json({ user });
-  } catch (error) {
-    next(error);
-  }
-}
+export const meHandler = asyncHandler(async (req, res) => {
+  const user = await UsuarioDAO.findById(req.user.id, {
+    aluno: true,
+    professor: true,
+    empresa: true,
+  });
+  res.json({ user });
+});
