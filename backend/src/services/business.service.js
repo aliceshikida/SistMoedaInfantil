@@ -6,6 +6,7 @@ import { VantagemDAO } from "../dao/vantagem.dao.js";
 import { TransacaoDAO } from "../dao/transacao.dao.js";
 import { CupomDAO } from "../dao/cupom.dao.js";
 import { createCouponCode } from "../utils/coupon.js";
+import { assertSaldoSuficiente } from "../utils/saldo.js";
 import { enqueueMail, enqueueMailWithQrCode } from "./notification.service.js";
 import { env } from "../config/env.js";
 
@@ -33,7 +34,7 @@ export async function enviarMoedas({ professorUserId, alunoId, quantidade, mensa
     instituicao: true,
   });
   if (!professor) throw { status: 404, message: "Professor não encontrado." };
-  if (professor.saldoMoedas < quantidade) throw { status: 400, message: "Saldo insuficiente." };
+  assertSaldoSuficiente(professor.saldoMoedas, quantidade);
   const aluno = await AlunoDAO.findById(alunoId, { usuario: true, instituicao: true });
   if (!aluno) throw { status: 404, message: "Aluno não encontrado." };
   await prisma.$transaction(async (tx) => {
@@ -108,7 +109,7 @@ export async function resgatarVantagem({ alunoUserId, vantagemId }) {
   const aluno = await AlunoDAO.findByUsuarioId(alunoUserId, { usuario: true });
   const vantagem = await VantagemDAO.findById(vantagemId, { empresa: { include: { usuario: true } } });
   if (!aluno || !vantagem) throw { status: 404, message: "Aluno ou vantagem inválida." };
-  if (aluno.saldoMoedas < vantagem.custoMoedas) throw { status: 400, message: "Saldo insuficiente." };
+  assertSaldoSuficiente(aluno.saldoMoedas, vantagem.custoMoedas);
 
   const cupom = await prisma.$transaction(async (tx) => {
     await tx.aluno.update({
