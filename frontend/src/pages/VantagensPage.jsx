@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import { toast } from 'react-toastify'
 import { Layout } from '../components/Layout'
 import { api, resolvePublicFileUrl } from '../lib/api'
+import { runWithToast } from '../lib/toastAction'
 import { useAuth } from '../providers/AuthProvider'
 
 const statusCupomLabel = {
@@ -71,28 +71,25 @@ export function VantagensPage() {
           className="surface-card mb-8 grid gap-4"
           onSubmit={async (event) => {
             event.preventDefault()
-            const toastId = toast.loading('Salvando vantagem...')
-            setSubmitting(true)
-            try {
-              const payload = new FormData()
-              payload.append('titulo', form.titulo)
-              payload.append('descricao', form.descricao)
-              payload.append('custoMoedas', String(form.custoMoedas))
-              if (form.foto) payload.append('foto', form.foto)
-              await api.post('/empresa/vantagens', payload)
-              toast.update(toastId, { render: 'Vantagem cadastrada com sucesso', type: 'success', isLoading: false, autoClose: 1200 })
-              setForm({ titulo: '', descricao: '', custoMoedas: 0, foto: null })
-              await loadData()
-            } catch (error) {
-              toast.update(toastId, {
-                render: error?.response?.data?.message || 'Erro ao cadastrar vantagem',
-                type: 'error',
-                isLoading: false,
-                autoClose: 2500,
-              })
-            } finally {
-              setSubmitting(false)
-            }
+            await runWithToast(
+              {
+                loading: 'Salvando vantagem...',
+                success: 'Vantagem cadastrada com sucesso',
+                error: 'Erro ao cadastrar vantagem',
+                onStart: () => setSubmitting(true),
+                onSettle: () => setSubmitting(false),
+              },
+              async () => {
+                const payload = new FormData()
+                payload.append('titulo', form.titulo)
+                payload.append('descricao', form.descricao)
+                payload.append('custoMoedas', String(form.custoMoedas))
+                if (form.foto) payload.append('foto', form.foto)
+                await api.post('/empresa/vantagens', payload)
+                setForm({ titulo: '', descricao: '', custoMoedas: 0, foto: null })
+                await loadData()
+              },
+            )
           }}
         >
           <h2 className="text-lg font-semibold text-slate-900">Cadastrar nova vantagem</h2>
@@ -184,23 +181,21 @@ export function VantagensPage() {
                   ) {
                     return
                   }
-                  const toastId = toast.loading('Excluindo...')
-                  setDeletingId(item.id)
-                  try {
-                    await api.delete(`/empresa/vantagens/${item.id}`)
-                    if (fotoModal?.vantagemId === item.id) setFotoModal(null)
-                    toast.update(toastId, { render: 'Vantagem excluída', type: 'success', isLoading: false, autoClose: 1200 })
-                    await loadData()
-                  } catch (error) {
-                    toast.update(toastId, {
-                      render: error?.response?.data?.message || 'Não foi possível excluir',
-                      type: 'error',
-                      isLoading: false,
-                      autoClose: 2800,
-                    })
-                  } finally {
-                    setDeletingId(null)
-                  }
+                  await runWithToast(
+                    {
+                      loading: 'Excluindo...',
+                      success: 'Vantagem excluída',
+                      error: 'Não foi possível excluir',
+                      errorAutoClose: 2800,
+                      onStart: () => setDeletingId(item.id),
+                      onSettle: () => setDeletingId(null),
+                    },
+                    async () => {
+                      await api.delete(`/empresa/vantagens/${item.id}`)
+                      if (fotoModal?.vantagemId === item.id) setFotoModal(null)
+                      await loadData()
+                    },
+                  )
                 }}
               >
                 {deletingId === item.id ? 'Excluindo...' : 'Excluir vantagem'}
@@ -213,22 +208,19 @@ export function VantagensPage() {
                 disabled={rescuingId === item.id}
                 onClick={async (e) => {
                   e.stopPropagation()
-                  const toastId = toast.loading('Processando resgate...')
-                  setRescuingId(item.id)
-                  try {
-                    await api.post('/aluno/resgatar', { vantagemId: item.id })
-                    toast.update(toastId, { render: 'Resgate realizado', type: 'success', isLoading: false, autoClose: 1200 })
-                    await loadCuponsAluno()
-                  } catch (error) {
-                    toast.update(toastId, {
-                      render: error?.response?.data?.message || 'Não foi possível resgatar',
-                      type: 'error',
-                      isLoading: false,
-                      autoClose: 2500,
-                    })
-                  } finally {
-                    setRescuingId(null)
-                  }
+                  await runWithToast(
+                    {
+                      loading: 'Processando resgate...',
+                      success: 'Resgate realizado',
+                      error: 'Não foi possível resgatar',
+                      onStart: () => setRescuingId(item.id),
+                      onSettle: () => setRescuingId(null),
+                    },
+                    async () => {
+                      await api.post('/aluno/resgatar', { vantagemId: item.id })
+                      await loadCuponsAluno()
+                    },
+                  )
                 }}
               >
                 {rescuingId === item.id ? 'Resgatando...' : 'Resgatar'}

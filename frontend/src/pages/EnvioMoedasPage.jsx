@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { toast } from 'react-toastify'
 import { Layout } from '../components/Layout'
 import { api } from '../lib/api'
+import { runWithToast } from '../lib/toastAction'
 
 export function EnvioMoedasPage() {
   const [form, setForm] = useState({ alunoId: '', quantidade: 0, mensagem: '' })
@@ -18,21 +18,16 @@ export function EnvioMoedasPage() {
         className="surface-card mx-auto grid w-full max-w-2xl gap-4"
         onSubmit={async (event) => {
           event.preventDefault()
-          const toastId = toast.loading('Enviando moedas...')
-          setSubmitting(true)
-          try {
-            await api.post('/professor/enviar-moedas', form)
-            toast.update(toastId, { render: 'Moedas enviadas com sucesso', type: 'success', isLoading: false, autoClose: 1200 })
-          } catch (error) {
-            toast.update(toastId, {
-              render: error?.response?.data?.message || 'Falha ao enviar moedas',
-              type: 'error',
-              isLoading: false,
-              autoClose: 2500,
-            })
-          } finally {
-            setSubmitting(false)
-          }
+          await runWithToast(
+            {
+              loading: 'Enviando moedas...',
+              success: 'Moedas enviadas com sucesso',
+              error: 'Falha ao enviar moedas',
+              onStart: () => setSubmitting(true),
+              onSettle: () => setSubmitting(false),
+            },
+            () => api.post('/professor/enviar-moedas', form),
+          )
         }}
       >
         <select
