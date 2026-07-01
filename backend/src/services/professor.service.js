@@ -1,5 +1,6 @@
 import { ProfessorDAO } from "../dao/professor.dao.js";
 import { getCurrentSemesterKey } from "../utils/semester.js";
+import { MOEDAS_CREDITO_SEMESTRAL } from "../config/constants.js";
 
 export async function creditSemesterCoinsIfNeeded(professorUsuarioId) {
   const professor = await ProfessorDAO.findByUsuarioId(professorUsuarioId);
@@ -8,7 +9,7 @@ export async function creditSemesterCoinsIfNeeded(professorUsuarioId) {
   if (professor.ultimoSemestreCredito === currentSemester) return professor;
 
   return ProfessorDAO.updateById(professor.id, {
-      saldoMoedas: { increment: 1000 },
+      saldoMoedas: { increment: MOEDAS_CREDITO_SEMESTRAL },
       ultimoSemestreCredito: currentSemester,
   });
 }
